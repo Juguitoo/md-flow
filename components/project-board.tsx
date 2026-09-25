@@ -27,12 +27,20 @@ import { toast } from "sonner";
 
 const DAILY: TaskStatus[] = ["backlog", "doing", "done"];
 
-export function ProjectBoard({ id }: { id: string }) {
+export function ProjectBoard({
+  id,
+  initial,
+}: {
+  id: string;
+  initial: ProjectDetail | null;
+}) {
   const { subscribe, refresh, markLocalEdit } = useBitacora();
   const router = useRouter();
-  const [detail, setDetail] = useState<ProjectDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [detail, setDetail] = useState<ProjectDetail | null>(initial);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(
+    initial ? null : "No encuentro ese proyecto.",
+  );
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [lane, setLane] = useState("doing");
   const [removing, setRemoving] = useState(false);
@@ -53,13 +61,6 @@ export function ProjectBoard({ id }: { id: string }) {
     },
     [id],
   );
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      void load();
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [load]);
 
   useEffect(() => {
     return subscribe((event) => {

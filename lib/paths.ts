@@ -3,8 +3,8 @@ import path from "node:path";
 
 export function resolveProjectPath(projectPath: string): string {
   return path.isAbsolute(projectPath)
-    ? path.resolve(projectPath)
-    : path.resolve(process.cwd(), projectPath);
+    ? path.resolve(/*turbopackIgnore: true*/ projectPath)
+    : path.resolve(/*turbopackIgnore: true*/ process.cwd(), projectPath);
 }
 
 export function isInside(root: string, target: string): boolean {

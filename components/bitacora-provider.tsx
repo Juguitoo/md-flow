@@ -32,9 +32,15 @@ interface BitacoraContextValue {
 
 const BitacoraContext = createContext<BitacoraContextValue | null>(null);
 
-export function BitacoraProvider({ children }: { children: React.ReactNode }) {
-  const [projects, setProjects] = useState<ProjectSummary[]>([]);
-  const [loading, setLoading] = useState(true);
+export function BitacoraProvider({
+  children,
+  initialProjects,
+}: {
+  children: React.ReactNode;
+  initialProjects: ProjectSummary[];
+}) {
+  const [projects, setProjects] = useState(initialProjects);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [live, setLive] = useState<Live>("connecting");
   const muteUntil = useRef(0);
@@ -54,11 +60,11 @@ export function BitacoraProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const source = new EventSource("/api/events");
-    source.onopen = () => setLive("on");
-    source.onerror = () => setLive("off");
-    const initial = window.setTimeout(() => {
+    source.onopen = () => {
+      setLive("on");
       void refresh();
-    }, 0);
+    };
+    source.onerror = () => setLive("off");
     const onUpdate = (event: Event) => {
       let payload: { projectId: string; file: string };
       try {
@@ -77,7 +83,6 @@ export function BitacoraProvider({ children }: { children: React.ReactNode }) {
     };
     source.addEventListener("update", onUpdate);
     return () => {
-      window.clearTimeout(initial);
       source.close();
     };
   }, [refresh]);

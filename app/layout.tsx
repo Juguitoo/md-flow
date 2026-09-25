@@ -2,8 +2,10 @@ import { AppShell } from "@/components/app-shell";
 import { BitacoraProvider } from "@/components/bitacora-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { loadSummaries } from "@/lib/load";
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Newsreader, Outfit } from "next/font/google";
+import { connection } from "next/server";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -28,7 +30,9 @@ export const metadata: Metadata = {
     "Tablero local para ver los proyectos y las tareas que ya escribes en markdown.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  await connection();
+  const projects = await loadSummaries();
   return (
     <html
       lang="es"
@@ -36,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full">
         <TooltipProvider>
-          <BitacoraProvider>
+          <BitacoraProvider initialProjects={projects}>
             <AppShell>{children}</AppShell>
             <Toaster />
           </BitacoraProvider>
