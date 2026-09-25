@@ -1,0 +1,14 @@
+[
+  {
+    "id": "juguito-reader",
+    "name": "juguitoReader",
+    "path": "examples/juguito-reader",
+    "github": null
+  },
+  {
+    "id": "huerto",
+    "name": "Huerto",
+    "path": "examples/huerto",
+    "github": null
+  }
+]
