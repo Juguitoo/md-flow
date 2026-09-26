@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "How it works · Bitácora",
+  title: "How it works · md-flow",
 };
 
 export default function HowPage() {
@@ -13,13 +13,13 @@ export default function HowPage() {
       </h1>
       <div className="mt-8 space-y-5 text-base leading-relaxed text-foreground/90">
         <p>
-          Bitácora is a local server. It runs on your machine, reads the folders you point it at,
+          md-flow is a local server. It runs on your machine, reads the folders you point it at,
           and shows the tasks you already wrote in markdown. It does not replace BACKLOG.md: that
           file is still the source.
         </p>
         <h2 className="pt-4 font-heading text-3xl tracking-tight">Does it update on its own?</h2>
         <p>
-          Yes, while Bitácora is running on the same computer where you edit. It watches the
+          Yes, while md-flow is running on the same computer where you edit. It watches the
           project folder. As soon as you save BACKLOG.md, ROADMAP.md, or KNOWN_ISSUES.md, the
           board reads the file again. There is no reload and no sync button.
         </p>
@@ -34,7 +34,7 @@ export default function HowPage() {
         </p>
         <h2 className="pt-4 font-heading text-3xl tracking-tight">What about commits?</h2>
         <p>
-          When you mark a task done you can note the hash. Bitácora stores it in the archive and,
+          When you mark a task done you can note the hash. md-flow stores it in the archive and,
           if that folder&apos;s <span className="font-mono text-sm">origin</span> remote is on
           GitHub, the hash opens the commit. You do not need issues or a token.
         </p>

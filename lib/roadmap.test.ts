@@ -6,7 +6,7 @@ const SAMPLE = `# Roadmap
 
 **Visión:** un lector local.
 
-Bitácora lee cada versión de abajo.
+md-flow lee cada versión de abajo.
 
 ## v1.0.0 — Base
 
@@ -30,7 +30,7 @@ Estadísticas.
 test("lee la visión y las paradas en orden", () => {
   const roadmap = parseRoadmap(SAMPLE);
   assert.equal(roadmap.vision, "un lector local.");
-  assert.equal(roadmap.vision.includes("Bitácora"), false);
+  assert.equal(roadmap.vision.includes("md-flow"), false);
   assert.equal(roadmap.stops.length, 3);
   assert.equal(roadmap.stops[0]?.id, "v1.0.0");
   assert.equal(roadmap.stops[0]?.status, "published");

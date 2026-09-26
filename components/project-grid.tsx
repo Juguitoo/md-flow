@@ -27,7 +27,7 @@ export function ProjectGrid() {
         <div className="max-w-xl">
           <h1 className="font-heading text-4xl tracking-tight md:text-5xl">Projects</h1>
           <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-            Each folder stays yours. Bitácora reads the backlog you already write, and while it is
+            Each folder stays yours. md-flow reads the backlog you already write, and while it is
             running it notices when you save.
           </p>
         </div>
@@ -62,7 +62,7 @@ export function ProjectGrid() {
           <h2 className="font-heading text-2xl">No folders yet</h2>
           <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
             Add the path of a project with BACKLOG.md, or load the two examples that come with
-            Bitácora again.
+            md-flow again.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             <AddProjectDialog

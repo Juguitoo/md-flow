@@ -81,7 +81,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-20 border-b border-border/80 bg-sidebar/95 px-4 py-3 backdrop-blur md:hidden">
         <div className="flex items-center justify-between gap-3">
           <Link href="/" className="font-heading text-2xl leading-none tracking-tight">
-            Bitácora
+            md-flow
           </Link>
           <div className="flex items-center gap-3">
             <LiveStatus compact />
@@ -135,7 +135,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         ) : (
           <div className="flex items-start justify-between gap-2">
             <Link href="/" className="min-w-0 px-2">
-              <p className="font-heading text-3xl leading-none tracking-tight">Bitácora</p>
+              <p className="font-heading text-3xl leading-none tracking-tight">md-flow</p>
               <p className="mt-2 text-xs text-muted-foreground">Your markdown, live</p>
             </Link>
             <Button
@@ -151,8 +151,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
         {collapsed ? (
           <>
-            <Link href="/" className="mt-4" aria-label="Bitácora" title="Bitácora">
-              <span className="font-heading text-xl leading-none">B</span>
+            <Link href="/" className="mt-4" aria-label="md-flow" title="md-flow">
+              <span className="font-heading text-sm leading-none">md</span>
             </Link>
             <div className="mt-4">
               <LiveStatus compact hideLabel />

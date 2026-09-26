@@ -1,6 +1,6 @@
 # Backlog
 
-Ejemplo para ver cómo Bitácora lee un proyecto. No es el backlog real de juguitoReader: es una muestra con el mismo tipo de archivos.
+Ejemplo para ver cómo md-flow lee un proyecto. No es el backlog real de juguitoReader: es una muestra con el mismo tipo de archivos.
 
 ## En curso
 

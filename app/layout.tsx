@@ -26,7 +26,7 @@ const plex = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bitácora",
+  title: "md-flow",
   description: "A local board for the tasks you already keep in markdown.",
 };
 

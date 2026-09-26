@@ -56,7 +56,7 @@ Ninguno.
 function maintenanceDoc(): string {
   return `# Mantenimiento del formato
 
-Bitácora lee estos markdown. Si se cambia el formato, la lista, el roadmap o el archive dejan de cuadrar. Este archivo explica qué se puede tocar y qué no.
+md-flow lee estos markdown. Si se cambia el formato, la lista, el roadmap o el archive dejan de cuadrar. Este archivo explica qué se puede tocar y qué no.
 
 No copies aquí detalles de un fallo que siga abierto ni nada que no deba ir a un repo público. Los planes de implementación van fuera de \`docs/\`, por ejemplo en \`.artifacts/plans/\`.
 
@@ -97,7 +97,7 @@ Cada tarea es un checkbox, no una tabla:
 - \`version:\` tiene que ser un id que exista en VERSIONS.md (\`v1.2.3\`, con la v).
 - \`tipo:\` es libre (\`feat\`, \`fix\`, …). \`ref:\` apunta a la ficha, relativa a la carpeta del backlog.
 - Bajo \`## Pendiente\`, agrupa por \`### vX.Y.Z\`.
-- \`[x]\` cuenta como hecha. Al marcarla hecha desde Bitácora, la línea sale del backlog y se añade una fila al archive de su versión. Hace falta id. Si no hay \`version:\`, usa la única versión en curso.
+- \`[x]\` cuenta como hecha. Al marcarla hecha desde md-flow, la línea sale del backlog y se añade una fila al archive de su versión. Hace falta id. Si no hay \`version:\`, usa la única versión en curso.
 - No conviertas el backlog en tablas. No inventes otras secciones \`##\` para el estado.
 
 ## tasks/{ID}.md
@@ -114,7 +114,7 @@ La ficha es el relato, no la lista. El prólogo lleva \`- estado: pendiente\`, \
 ## Resolución
 \`\`\`
 
-Se pueden añadir otras \`##\` al final. Bitácora no las borra, pero la pantalla solo edita las cuatro de arriba. Al cerrar la tarea, si hay texto en Resolución, ese texto va a la nota del archive.
+Se pueden añadir otras \`##\` al final. md-flow no las borra, pero la pantalla solo edita las cuatro de arriba. Al cerrar la tarea, si hay texto en Resolución, ese texto va a la nota del archive.
 
 ## VERSIONS.md
 
@@ -137,7 +137,7 @@ Tres secciones:
 
 ## ROADMAP.md
 
-La visión es una sola línea. Si el texto va en la línea de abajo, Bitácora no lo lee.
+La visión es una sola línea. Si el texto va en la línea de abajo, md-flow no lo lee.
 
 \`\`\`markdown
 **Visión:** El objetivo del proyecto, en una frase.
