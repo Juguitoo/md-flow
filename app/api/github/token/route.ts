@@ -13,7 +13,7 @@ export async function GET() {
 export async function PUT(request: Request) {
   const body = (await request.json().catch(() => null)) as { token?: unknown } | null;
   if (!body || typeof body.token !== "string") {
-    return jsonError("Falta el token.");
+    return jsonError("The token is missing.");
   }
   await writeGithubToken(body.token);
   clearGithubCache();

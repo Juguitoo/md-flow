@@ -48,10 +48,10 @@ export function ArchiveTaskList({
   if (tasks.length === 0) {
     return (
       <div className="mt-8 max-w-xl rounded-2xl bg-card px-5 py-6 shadow-sm ring-1 ring-foreground/8">
-        <h2 className="font-heading text-2xl">Nada cerrado todavía</h2>
+        <h2 className="font-heading text-2xl">Nothing closed yet</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          Cuando marques una tarea como hecha, sale del backlog y aparece aquí, en el archive de
-          su versión.
+          When you mark a task done, it leaves the backlog and shows up here, in that version's
+          archive.
         </p>
       </div>
     );
@@ -71,13 +71,13 @@ export function ArchiveTaskList({
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Buscar por id o título"
-          aria-label="Buscar por id o título"
+          placeholder="Search by id or title"
+          aria-label="Search by id or title"
           className="pl-8"
         />
       </div>
       {visible.length === 0 ? (
-        <p className="px-1 py-6 text-sm text-muted-foreground">Ninguna tarea coincide.</p>
+        <p className="px-1 py-6 text-sm text-muted-foreground">No task matches.</p>
       ) : (
         <div className="mt-4 grid gap-4">
       {ordered.map((version) => {
@@ -92,7 +92,7 @@ export function ArchiveTaskList({
                 {title ? <span className="ml-3 text-base font-normal text-muted-foreground">{title}</span> : null}
               </h2>
               <p className="text-xs text-muted-foreground">
-                {group.length} {group.length === 1 ? "cerrada" : "cerradas"}
+                {group.length} closed
               </p>
             </header>
             <ul className="mt-2 flex flex-col gap-0.5">
@@ -196,7 +196,7 @@ export function ArchiveTaskDetail({
     <article className="mx-auto w-full max-w-3xl">
       <Button variant="ghost" size="sm" className="-ml-2" onClick={onClose}>
         <ArrowLeft />
-        Versiones
+        Versions
       </Button>
       <div className="mt-6">
         <p className="font-mono text-xs tracking-wide text-primary">{task.id}</p>
@@ -208,7 +208,7 @@ export function ArchiveTaskDetail({
         </p>
       </div>
       <section className="mt-10">
-        <h2 className="font-heading text-2xl tracking-tight">En el archive</h2>
+        <h2 className="font-heading text-2xl tracking-tight">In the archive</h2>
         <div className="mt-4 grid gap-3">
           {extractHashes(task.commits).length > 0 ? (
             <p className="flex flex-wrap gap-2">
@@ -234,26 +234,26 @@ export function ArchiveTaskDetail({
           {task.note.trim() ? (
             <MarkdownView content={task.note} repo={repo} />
           ) : extractHashes(task.commits).length === 0 ? (
-            <p className="text-sm text-muted-foreground">El archive no dejó nota de cómo se cerró.</p>
+            <p className="text-sm text-muted-foreground">The archive has no note about how this was closed.</p>
           ) : null}
         </div>
       </section>
-      {loadingFicha ? <p className="mt-10 text-sm text-muted-foreground">Buscando la ficha…</p> : null}
+      {loadingFicha ? <p className="mt-10 text-sm text-muted-foreground">Looking for the note…</p> : null}
       {parsed && ficha ? (
         <section className="mt-12 border-t border-border/70 pt-8">
-          <h2 className="font-heading text-2xl tracking-tight">Ficha</h2>
+          <h2 className="font-heading text-2xl tracking-tight">Note</h2>
           <p className="mt-1 font-mono text-[11px] text-muted-foreground">{ficha.path}</p>
           <div className="mt-6 grid gap-8">
             {FICHA_SECTIONS.map((section) => {
               const body = parsed.sections[section.id];
               return (
                 <div key={section.id}>
-                  <h3 className="font-heading text-xl tracking-tight">{section.title}</h3>
+                  <h3 className="font-heading text-xl tracking-tight">{section.label}</h3>
                   <div className="mt-2">
                     {body.trim() ? (
                       <MarkdownView content={body} repo={repo} />
                     ) : (
-                      <p className="text-sm text-muted-foreground">Nada escrito.</p>
+                      <p className="text-sm text-muted-foreground">Nothing written.</p>
                     )}
                   </div>
                 </div>
@@ -287,9 +287,9 @@ export function RoadmapView({
   const [summary, setSummary] = useState("");
 
   const versionStatus: { status: VersionStatus; label: string }[] = [
-    { status: "planned", label: "Prevista" },
-    { status: "doing", label: "En curso" },
-    { status: "published", label: "Publicada" },
+    { status: "planned", label: "Planned" },
+    { status: "doing", label: "In progress" },
+    { status: "published", label: "Published" },
   ];
 
   async function changeStatus(versionId: string, status: VersionStatus) {
@@ -300,17 +300,17 @@ export function RoadmapView({
         body: JSON.stringify({ versionId, status }),
       });
       if (status === "published" && result.openTaskIds.length > 0) {
-        toast.warning(`Cerré ${versionId}. Siguen abiertas: ${result.openTaskIds.join(", ")}.`);
+        toast.warning(`Closed ${versionId}. Still open: ${result.openTaskIds.join(", ")}.`);
       } else if (status === "doing") {
-        toast(`${versionId} queda en curso.`);
+        toast(`${versionId} is now in progress.`);
       } else if (status === "published") {
-        toast(`Cerré ${versionId}.`);
+        toast(`Closed ${versionId}.`);
       } else {
-        toast(`${versionId} queda prevista.`);
+        toast(`${versionId} is now planned.`);
       }
       await onChanged();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pude cambiar el estado.");
+      toast.error(err instanceof Error ? err.message : "Couldn't change the status.");
     } finally {
       setClosing(false);
     }
@@ -324,17 +324,17 @@ export function RoadmapView({
         body: JSON.stringify({ versionId, title, summary }),
       });
       setEditing(false);
-      toast("Texto guardado.");
+      toast("Text saved.");
       await onChanged();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pude guardar el texto.");
+      toast.error(err instanceof Error ? err.message : "Couldn't save the text.");
     } finally {
       setClosing(false);
     }
   }
 
   async function removeVersion(versionId: string) {
-    if (!window.confirm(`¿Eliminar ${versionId} del índice y del roadmap?`)) return;
+    if (!window.confirm(`Delete ${versionId} from the index and the roadmap?`)) return;
     setClosing(true);
     try {
       await api(`/api/projects/${projectId}/versions/delete`, {
@@ -342,10 +342,10 @@ export function RoadmapView({
         body: JSON.stringify({ versionId }),
       });
       setSelectedId(null);
-      toast(`Eliminé ${versionId}.`);
+      toast(`Deleted ${versionId}.`);
       await onChanged();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pude eliminar la versión.");
+      toast.error(err instanceof Error ? err.message : "Couldn't delete the version.");
     } finally {
       setClosing(false);
     }
@@ -368,7 +368,7 @@ export function RoadmapView({
         setSelectedId(current?.id ?? null);
       })
       .catch((err: unknown) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "No pude leer el roadmap.");
+        if (!cancelled) setError(err instanceof Error ? err.message : "Couldn't read the roadmap.");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -381,7 +381,7 @@ export function RoadmapView({
   if (!file) {
     return (
       <p className="mt-8 max-w-xl text-sm leading-relaxed text-muted-foreground">
-        No encuentro ROADMAP.md. Ahí va el objetivo del proyecto y la visión por versión.
+        ROADMAP.md is missing. That file holds the project goal and each version's summary.
       </p>
     );
   }
@@ -398,7 +398,7 @@ export function RoadmapView({
 
   return (
     <div className="mt-8">
-      {loading ? <p className="text-sm text-muted-foreground">Leyendo el roadmap…</p> : null}
+      {loading ? <p className="text-sm text-muted-foreground">Reading the roadmap…</p> : null}
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       {selected ? (
         <div
@@ -411,7 +411,7 @@ export function RoadmapView({
                 variant="ghost"
                 size="icon-sm"
                 className="absolute top-3 right-3 text-muted-foreground"
-                aria-label="Acciones de la versión"
+                aria-label="Version actions"
                 disabled={closing}
               >
                 <MoreVertical />
@@ -427,7 +427,7 @@ export function RoadmapView({
                 }}
               >
                 <Pencil />
-                Editar texto
+                Edit text
               </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
@@ -435,7 +435,7 @@ export function RoadmapView({
                 onSelect={() => void removeVersion(selected.id)}
               >
                 <Trash2 />
-                Eliminar
+                Delete version
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -447,14 +447,14 @@ export function RoadmapView({
                 value={summary}
                 onChange={(event) => setSummary(event.target.value)}
                 rows={5}
-                placeholder="Qué entra en esta versión."
+                placeholder="What this version includes."
               />
               <div className="flex justify-center gap-2">
                 <Button size="sm" disabled={closing} onClick={() => void saveText(selected.id)}>
-                  {closing ? "Guardando…" : "Guardar"}
+                  {closing ? "Saving…" : "Save"}
                 </Button>
                 <Button size="sm" variant="ghost" disabled={closing} onClick={() => setEditing(false)}>
-                  Cancelar
+                  Cancel
                 </Button>
               </div>
             </div>
@@ -466,7 +466,7 @@ export function RoadmapView({
                   <MarkdownView content={selected.summary} />
                 </div>
               ) : (
-                <p className="mt-3 text-sm text-muted-foreground">Sin texto todavía.</p>
+                <p className="mt-3 text-sm text-muted-foreground">No text yet.</p>
               )}
             </>
           )}
@@ -500,7 +500,7 @@ export function RoadmapView({
       ) : null}
       {!loading && content && !roadmap ? (
         <p className="mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          No pude leer el roadmap. Las tareas del proyecto siguen en su lista.
+          Couldn't read the roadmap. The project's tasks are still in their list.
         </p>
       ) : null}
     </div>
@@ -542,7 +542,7 @@ function Timeline({
   if (stops.length === 0) {
     return (
       <p className="mt-6 text-sm text-muted-foreground">
-        El roadmap no tiene versiones con el formato <span className="font-mono">## v1.2.3 — Título</span>.
+        The roadmap has no versions in the form <span className="font-mono">## v1.2.3 — Title</span>.
       </p>
     );
   }

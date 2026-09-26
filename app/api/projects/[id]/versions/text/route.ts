@@ -16,7 +16,7 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   const body = (await request.json().catch(() => null)) as {
     versionId?: unknown;
@@ -26,21 +26,21 @@ export async function POST(
   const versionId = typeof body?.versionId === "string" ? body.versionId.trim() : "";
   const title = typeof body?.title === "string" ? body.title.trim() : "";
   const summary = typeof body?.summary === "string" ? body.summary : "";
-  if (!versionId) return jsonError("Falta la versión.");
-  if (!title) return jsonError("Escribe un título.");
+  if (!versionId) return jsonError("The version is missing.");
+  if (!title) return jsonError("Write a title.");
   if (title.length > 160 || title.includes("|") || title.includes("\n")) {
-    return jsonError("El título no puede llevar | ni ser tan largo.");
+    return jsonError("The title cannot contain | or be that long.");
   }
-  if (summary.length > 4000) return jsonError("El texto es demasiado largo.");
+  if (summary.length > 4000) return jsonError("The text is too long.");
 
   const root = resolveProjectPath(project.path);
   const timeline = await loadVersions(root);
-  if (!timeline.file) return jsonError("No encuentro VERSIONS.md.");
+  if (!timeline.file) return jsonError("VERSIONS.md is missing.");
   if (!timeline.versions.some((entry) => entry.id === versionId)) {
-    return jsonError("Esa versión no está en VERSIONS.md.");
+    return jsonError("That version is not in VERSIONS.md.");
   }
   const absolute = safeProjectFile(root, timeline.file);
-  if (!absolute) return jsonError("La ruta de VERSIONS.md no es válida.");
+  if (!absolute) return jsonError("The VERSIONS.md path is not valid.");
 
   const current = await fs.readFile(absolute, "utf8");
   const titled = setVersionTitle(current, versionId, title);

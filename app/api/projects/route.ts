@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     path?: unknown;
   } | null;
   if (!body || typeof body.path !== "string") {
-    return jsonError("Falta la ruta de la carpeta.");
+    return jsonError("The folder path is missing.");
   }
 
   try {
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     const detail = await scanProject(project);
     return Response.json(detail, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "No pude añadir el proyecto.";
+    const message = error instanceof Error ? error.message : "Couldn't add the project.";
     return jsonError(message);
   }
 }

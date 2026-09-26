@@ -9,10 +9,10 @@ function fold(value: string): string {
 }
 
 export const FICHA_SECTIONS = [
-  { id: "problema", title: "Problema" },
-  { id: "decision", title: "Decisión" },
-  { id: "durante", title: "Durante el desarrollo" },
-  { id: "resolucion", title: "Resolución" },
+  { id: "problema", title: "Problema", label: "Problem" },
+  { id: "decision", title: "Decisión", label: "Decision" },
+  { id: "durante", title: "Durante el desarrollo", label: "During development" },
+  { id: "resolucion", title: "Resolución", label: "Resolution" },
 ] as const;
 
 export type FichaSectionId = (typeof FICHA_SECTIONS)[number]["id"];

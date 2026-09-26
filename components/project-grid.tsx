@@ -15,9 +15,9 @@ export function ProjectGrid() {
     try {
       const result = await api<{ added: string[] }>("/api/projects/examples", { method: "POST" });
       await refresh();
-      toast(result.added.length ? `Volvieron: ${result.added.join(", ")}.` : "Los ejemplos ya estaban.");
+      toast(result.added.length ? `Back: ${result.added.join(", ")}.` : "The examples were already there.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pude restaurar los ejemplos.");
+      toast.error(err instanceof Error ? err.message : "Couldn't restore the examples.");
     }
   }
 
@@ -25,17 +25,17 @@ export function ProjectGrid() {
     <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8 md:py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-xl">
-          <h1 className="font-heading text-4xl tracking-tight md:text-5xl">Proyectos</h1>
+          <h1 className="font-heading text-4xl tracking-tight md:text-5xl">Projects</h1>
           <p className="mt-3 text-base leading-relaxed text-muted-foreground">
-            Cada carpeta sigue siendo tuya. Bitácora lee el backlog que ya escribes y, mientras
-            esté en marcha, se entera sola cuando guardas.
+            Each folder stays yours. Bitácora reads the backlog you already write, and while it is
+            running it notices when you save.
           </p>
         </div>
         <AddProjectDialog
           trigger={
             <Button>
               <Plus />
-              Añadir proyecto
+              Add project
             </Button>
           }
         />
@@ -45,7 +45,7 @@ export function ProjectGrid() {
         <div className="mt-8 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
           <p>{error}</p>
           <Button variant="outline" className="mt-3" onClick={() => void refresh()}>
-            Reintentar
+            Retry
           </Button>
         </div>
       ) : null}
@@ -59,22 +59,22 @@ export function ProjectGrid() {
 
       {!loading && projects.length === 0 ? (
         <div className="mt-8 rounded-2xl bg-card px-6 py-10 ring-1 ring-foreground/10">
-          <h2 className="font-heading text-2xl">Ninguna carpeta todavía</h2>
+          <h2 className="font-heading text-2xl">No folders yet</h2>
           <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
-            Añade la ruta de un proyecto con BACKLOG.md, o vuelve a cargar los dos ejemplos que
-            vienen con Bitácora.
+            Add the path of a project with BACKLOG.md, or load the two examples that come with
+            Bitácora again.
           </p>
           <div className="mt-5 flex flex-wrap gap-2">
             <AddProjectDialog
               trigger={
                 <Button>
                   <Plus />
-                  Añadir proyecto
+                  Add project
                 </Button>
               }
             />
             <Button variant="outline" onClick={() => void restore()}>
-              Restaurar ejemplos
+              Restore examples
             </Button>
           </div>
         </div>
@@ -96,7 +96,7 @@ export function ProjectGrid() {
                   <p className="mt-1 font-mono text-[11px] text-muted-foreground">{project.path}</p>
                 </div>
                 <p className="text-right text-sm text-muted-foreground">
-                  {project.openCount} abiertas
+                  {project.openCount} open
                 </p>
               </div>
 
@@ -105,9 +105,9 @@ export function ProjectGrid() {
               ) : (
                 <>
                   <dl className="mt-6 grid grid-cols-3 gap-2">
-                    <Count label="Pendiente" value={project.counts.backlog} />
-                    <Count label="En curso" value={project.counts.doing} />
-                    <Count label="Hecho" value={project.counts.done} />
+                    <Count label="To do" value={project.counts.backlog} />
+                    <Count label="In progress" value={project.counts.doing} />
+                    <Count label="Done" value={project.counts.done} />
                   </dl>
                   {project.highlights.length > 0 ? (
                     <ul className="mt-5 space-y-1.5 border-t border-border/80 pt-4">
@@ -123,14 +123,14 @@ export function ProjectGrid() {
                   ) : (
                     <p className="mt-5 border-t border-border/80 pt-4 text-sm text-muted-foreground">
                       {project.files.length
-                        ? "Esos markdown no tienen tareas con checkbox."
-                        : "No hay BACKLOG.md en la raíz ni en docs/."}
+                        ? "Those markdown files have no checkbox tasks."
+                        : "No BACKLOG.md in the root or in docs/."}
                     </p>
                   )}
                   <p className="mt-4 font-mono text-[10px] text-muted-foreground">
                     {project.files.length
                       ? project.files.map((file) => file.path).join(" · ")
-                      : "sin archivos de tareas"}
+                      : "no task files"}
                     {project.github ? ` · ${project.github}` : ""}
                   </p>
                 </>

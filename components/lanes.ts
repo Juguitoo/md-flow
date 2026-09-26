@@ -8,46 +8,46 @@ export const LANES: {
 }[] = [
   {
     status: "backlog",
-    title: "Pendiente",
-    hint: "Todavía no empezadas",
+    title: "To do",
+    hint: "Not started yet",
     tone: "bg-lane-backlog",
   },
   {
     status: "doing",
-    title: "En curso",
-    hint: "Lo que estás tocando ahora",
+    title: "In progress",
+    hint: "What you're working on now",
     tone: "bg-lane-doing",
   },
   {
     status: "done",
-    title: "Hecho",
-    hint: "Cerradas en el markdown",
+    title: "Done",
+    hint: "Closed in the markdown",
     tone: "bg-lane-done",
   },
   {
     status: "roadmap",
     title: "Roadmap",
-    hint: "Hitos, no el día a día",
+    hint: "Milestones, not day-to-day work",
     tone: "bg-lane-roadmap",
   },
   {
     status: "issue",
-    title: "Problemas",
-    hint: "Lo que sigue abierto",
+    title: "Issues",
+    hint: "What is still open",
     tone: "bg-lane-issue",
   },
 ];
 
 export const PRIORITY_LABEL: Record<Priority, string> = {
-  alta: "Alta",
-  media: "Media",
-  baja: "Baja",
+  alta: "High",
+  media: "Medium",
+  baja: "Low",
 };
 
 export const EMPTY_LANE: Record<TaskStatus, string> = {
-  backlog: "Nada pendiente. Añádela aquí o escríbela en BACKLOG.md.",
-  doing: "Nada en curso.",
-  done: "Todavía no hay nada cerrado.",
-  roadmap: "El roadmap está vacío.",
-  issue: "No hay problemas abiertos.",
+  backlog: "Nothing to do. Add one here or write it in BACKLOG.md.",
+  doing: "Nothing in progress.",
+  done: "Nothing closed yet.",
+  roadmap: "The roadmap is empty.",
+  issue: "No open issues.",
 };

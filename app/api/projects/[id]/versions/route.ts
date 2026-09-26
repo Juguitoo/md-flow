@@ -28,7 +28,7 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   const body = (await request.json().catch(() => null)) as {
     versionId?: unknown;
@@ -38,17 +38,17 @@ export async function POST(
   const versionId = typeof body?.versionId === "string" ? body.versionId.trim() : "";
   const title = typeof body?.title === "string" ? body.title.trim() : "";
   const status = body?.status === "doing" ? "doing" : body?.status === "planned" ? "planned" : null;
-  if (!VERSION_ID.test(versionId)) return jsonError("La versión tiene que parecerse a v1.2.3.");
-  if (!title) return jsonError("Escribe un título.");
-  if (title.length > 160) return jsonError("El título es demasiado largo.");
-  if (!status) return jsonError("Elige si queda prevista o en curso.");
-  if (title.includes("|") || title.includes("\n")) return jsonError("El título no puede llevar |.");
+  if (!VERSION_ID.test(versionId)) return jsonError("The version should look like v1.2.3.");
+  if (!title) return jsonError("Write a title.");
+  if (title.length > 160) return jsonError("The title is too long.");
+  if (!status) return jsonError("Choose whether it is planned or in progress.");
+  if (title.includes("|") || title.includes("\n")) return jsonError("The title cannot contain |.");
 
   const root = resolveProjectPath(project.path);
   const timeline = await loadVersions(root);
   const versionsFile = timeline.file ?? "docs/VERSIONS.md";
   const versionsAbsolute = safeProjectFile(root, versionsFile);
-  if (!versionsAbsolute) return jsonError("La ruta de VERSIONS.md no es válida.");
+  if (!versionsAbsolute) return jsonError("The VERSIONS.md path is not valid.");
 
   let current = "";
   try {
@@ -62,13 +62,13 @@ export async function POST(
     status,
     archive: `archive/${versionId}.md`,
   });
-  if (!added.changed) return jsonError(`${versionId} ya está en VERSIONS.md.`);
+  if (!added.changed) return jsonError(`${versionId} is already in VERSIONS.md.`);
 
   const archiveRelative = versionsFile.includes("/")
     ? `${versionsFile.slice(0, versionsFile.lastIndexOf("/") + 1)}archive/${versionId}.md`
     : `archive/${versionId}.md`;
   const archiveAbsolute = safeProjectFile(root, archiveRelative);
-  if (!archiveAbsolute) return jsonError("La ruta del archive no es válida.");
+  if (!archiveAbsolute) return jsonError("The archive path is not valid.");
 
   await fs.mkdir(path.dirname(versionsAbsolute), { recursive: true });
   await fs.writeFile(versionsAbsolute, added.content);

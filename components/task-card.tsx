@@ -27,7 +27,7 @@ export function TaskCard({
             onClick={onToggle}
             disabled={pending}
             aria-pressed={task.checked}
-            aria-label={task.checked ? "Marcar como pendiente" : "Marcar como hecha"}
+            aria-label={task.checked ? "Mark as to do" : "Mark as done"}
             className="mt-0.5 shrink-0 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
           >
             {task.checked ? "[x]" : "[ ]"}
@@ -46,7 +46,7 @@ export function TaskCard({
               <Badge variant="outline">{PRIORITY_LABEL[task.priority]}</Badge>
             ) : null}
             {task.status === "doing" && task.source === "github" ? (
-              <Badge variant="secondary">en curso</Badge>
+              <Badge variant="secondary">in progress</Badge>
             ) : null}
           </div>
           <h3
@@ -73,7 +73,7 @@ export function TaskCard({
             href={task.url}
             target="_blank"
             rel="noreferrer"
-            aria-label={`Abrir ${task.id} en GitHub`}
+            aria-label={`Open ${task.id} on GitHub`}
             className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
           >
             <ExternalLink className="size-3.5" />

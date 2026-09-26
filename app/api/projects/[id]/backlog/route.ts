@@ -14,10 +14,10 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   const root = resolveProjectPath(project.path);
-  if (!isDirectory(root)) return jsonError("No encuentro la carpeta de este proyecto.");
+  if (!isDirectory(root)) return jsonError("I can't find this project's folder.");
 
   const created = await scaffoldProject(root);
   await getHub().sync();

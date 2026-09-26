@@ -15,28 +15,28 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   const body = (await request.json().catch(() => null)) as {
     file?: unknown;
     line?: unknown;
   } | null;
   if (!body || typeof body.file !== "string" || typeof body.line !== "number") {
-    return jsonError("Faltan el archivo y la línea.");
+    return jsonError("The file and line are missing.");
   }
 
   const root = resolveProjectPath(project.path);
   const absolute = safeProjectFile(root, body.file);
   const discovered = await discoverFiles(root);
   if (!absolute || !discovered.includes(body.file)) {
-    return jsonError("Ese archivo no forma parte de la lista.");
+    return jsonError("That file is not part of the list.");
   }
 
   const content = await fs.readFile(absolute, "utf8");
   const task = parseMarkdown(content, body.file).find((entry) => entry.line === body.line);
-  if (!task) return jsonError("No encuentro esa tarea.");
+  if (!task) return jsonError("I can't find that task.");
   const removed = removeTask(content, body.line);
-  if (!removed.changed) return jsonError("No pude quitar esa tarea.");
+  if (!removed.changed) return jsonError("Couldn't remove that task.");
   await fs.writeFile(absolute, removed.content);
 
   await getHub().sync();

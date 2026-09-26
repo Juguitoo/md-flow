@@ -52,7 +52,7 @@ export function BitacoraProvider({
       setProjects(data.projects);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No pude leer los proyectos.");
+      setError(err instanceof Error ? err.message : "Couldn't load the projects.");
     } finally {
       setLoading(false);
     }

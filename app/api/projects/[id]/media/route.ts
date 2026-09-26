@@ -22,7 +22,7 @@ export async function GET(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   const relative = new URL(request.url).searchParams.get("path") ?? "";
   const normalized = relative.replace(/\\/g, "/").replace(/^\.\//, "");
@@ -34,17 +34,17 @@ export async function GET(
     normalized.includes("\0") ||
     normalized.split("/").includes("..")
   ) {
-    return jsonError("Esa imagen no se puede abrir.");
+    return jsonError("That image cannot be opened.");
   }
 
   const root = resolveProjectPath(project.path);
   const absolute = safeProjectFile(root, normalized);
-  if (!absolute) return jsonError("Esa imagen no se puede abrir.");
+  if (!absolute) return jsonError("That image cannot be opened.");
 
   try {
     const stat = await fs.stat(absolute);
-    if (!stat.isFile()) return jsonError("No encuentro esa imagen.", 404);
-    if (stat.size > MAX_BYTES) return jsonError("Esa imagen es demasiado grande.");
+    if (!stat.isFile()) return jsonError("I can't find that image.", 404);
+    if (stat.size > MAX_BYTES) return jsonError("That image is too large.");
     const bytes = await fs.readFile(absolute);
     return new Response(bytes, {
       headers: {
@@ -53,6 +53,6 @@ export async function GET(
       },
     });
   } catch {
-    return jsonError("No encuentro esa imagen.", 404);
+    return jsonError("I can't find that image.", 404);
   }
 }

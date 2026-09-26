@@ -35,7 +35,7 @@ export function ProjectBoard({
   const [detail, setDetail] = useState<ProjectDetail | null>(initial);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(
-    initial ? null : "No encuentro ese proyecto.",
+    initial ? null : "That project is not on the board.",
   );
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -53,7 +53,7 @@ export function ProjectBoard({
         setDetail(next);
         setError(null);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "No pude abrir el proyecto.");
+        setError(err instanceof Error ? err.message : "Couldn't open the project.");
       } finally {
         setLoading(false);
       }
@@ -67,7 +67,7 @@ export function ProjectBoard({
       void load();
       if (!event.quiet) {
         const name = event.file.split("/").pop() ?? event.file;
-        toast(`${name} se ha actualizado.`);
+        toast(`${name} was updated.`);
       }
     });
   }, [subscribe, id, load]);
@@ -109,22 +109,22 @@ export function ProjectBoard({
       if (match) openTask(match);
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pude cambiar el estado.");
+      toast.error(err instanceof Error ? err.message : "Couldn't change the status.");
     } finally {
       setPendingKey(null);
     }
   }
 
   async function remove() {
-    if (!window.confirm("¿Quitar este proyecto del tablero? La carpeta no se borra.")) return;
+    if (!window.confirm("Remove this project from the board? The folder stays on disk.")) return;
     setRemoving(true);
     try {
       await api(`/api/projects/${id}`, { method: "DELETE" });
       await refresh();
-      toast("Proyecto quitado del tablero. La carpeta sigue en disco.");
+      toast("Removed from the board. The folder is still on disk.");
       router.push("/");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pude quitar el proyecto.");
+      toast.error(err instanceof Error ? err.message : "Couldn't remove the project.");
       setRemoving(false);
     }
   }
@@ -145,10 +145,10 @@ export function ProjectBoard({
   if (error && !detail) {
     return (
       <div className="px-4 py-10 md:px-8">
-        <h1 className="font-heading text-4xl">No está el proyecto</h1>
+        <h1 className="font-heading text-4xl">Project not found</h1>
         <p className="mt-3 max-w-lg text-sm text-muted-foreground">{error}</p>
         <Button className="mt-5" variant="outline" onClick={() => void load()}>
-          Reintentar
+          Retry
         </Button>
       </div>
     );
@@ -202,8 +202,8 @@ export function ProjectBoard({
           <h1 className="font-heading text-4xl tracking-tight md:text-5xl">{detail.name}</h1>
           <p className="mt-2 font-mono text-[11px] text-muted-foreground">{detail.path}</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Si guardas un markdown de esta carpeta, la lista se actualiza sola.
-            {detail.updatedAt ? ` Último archivo a las ${formatTime(detail.updatedAt)}.` : ""}
+            Saving a markdown file in this folder updates the list.
+            {detail.updatedAt ? ` Last file at ${formatTime(detail.updatedAt)}.` : ""}
           </p>
           <Button
             variant="ghost"
@@ -213,7 +213,7 @@ export function ProjectBoard({
             disabled={removing}
           >
             <Trash2 />
-            {removing ? "Quitando…" : "Quitar del tablero"}
+            {removing ? "Removing…" : "Remove from board"}
           </Button>
         </div>
       </div>
@@ -242,7 +242,7 @@ export function ProjectBoard({
           className="rounded-full"
           onClick={() => setView("tasks")}
         >
-          Tareas
+          Tasks
         </Button>
         <Button
           variant={view === "versions" ? "default" : "ghost"}
@@ -250,7 +250,7 @@ export function ProjectBoard({
           className="rounded-full"
           onClick={() => setView("versions")}
         >
-          Versiones
+          Versions
         </Button>
         <Button
           variant={view === "roadmap" ? "default" : "ghost"}
@@ -299,7 +299,7 @@ export function ProjectBoard({
                   return refresh();
                 })
                 .catch((err: unknown) => {
-                  toast.error(err instanceof Error ? err.message : "No pude cambiar el orden.");
+                  toast.error(err instanceof Error ? err.message : "Couldn't change the order.");
                 });
             }}
           />
@@ -323,8 +323,8 @@ export function ProjectBoard({
       ) : null}
       {!hasBacklog && detail.files.length > 0 ? (
         <p className="mt-4 text-xs text-muted-foreground">
-          Las tareas nuevas se escriben en docs/BACKLOG.md. Este proyecto todavía no lo tiene: al
-          crear una, Bitácora lo añade ahí.
+          New tasks are written to docs/BACKLOG.md. This project does not have one yet: creating a
+          task adds it there.
         </p>
       ) : null}
     </div>
@@ -347,9 +347,9 @@ function EmptyFiles({
     try {
       const next = await api<ProjectDetail>(`/api/projects/${id}/backlog`, { method: "POST" });
       onCreated(next);
-      toast("Creé la estructura en docs/, con el mantenimiento del formato.");
+      toast("Created the docs/ structure, including the format guide.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pude crear el backlog.");
+      toast.error(err instanceof Error ? err.message : "Couldn't create the backlog.");
     } finally {
       setPending(false);
     }
@@ -357,13 +357,13 @@ function EmptyFiles({
 
   return (
     <div className="mt-6 rounded-2xl bg-card px-5 py-6 ring-1 ring-foreground/10">
-      <h2 className="font-heading text-2xl">Esta carpeta no tiene tareas en markdown</h2>
+      <h2 className="font-heading text-2xl">This folder has no markdown tasks</h2>
       <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-        Puedo dejar en docs/ el backlog, el roadmap, el índice de versiones, el archive, las fichas
-        y un MAINTENANCE.md con el formato que hay que respetar. No toco lo que ya exista.
+        I can add a backlog, a roadmap, a version index, an archive, task notes, and a
+        MAINTENANCE.md that describes the format, all under docs/. Existing files stay as they are.
       </p>
       <Button className="mt-4" onClick={() => void create()} disabled={pending}>
-        {pending ? "Creando…" : "Crear estructura"}
+        {pending ? "Creating…" : "Create structure"}
       </Button>
     </div>
   );
@@ -413,14 +413,14 @@ function NewTaskDialog({
         }),
       });
       onCreated(next);
-      toast("Tarea escrita en el backlog.");
+      toast("Task written to the backlog.");
       setOpen(false);
       setTitle("");
       setTicketId("");
       setStatus("backlog");
       setVersion("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No pude crear la tarea.");
+      setError(err instanceof Error ? err.message : "Couldn't create the task.");
     } finally {
       setPending(false);
     }
@@ -431,25 +431,25 @@ function NewTaskDialog({
       <DialogTrigger asChild>
         <Button disabled={disabled}>
           <Plus />
-          Nueva tarea
+          New task
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-heading text-xl">Nueva tarea</DialogTitle>
+          <DialogTitle className="font-heading text-xl">New task</DialogTitle>
           <DialogDescription>
-            Se añade como checkbox en docs/BACKLOG.md. La versión decide a qué archive pasa cuando
-            la marques hecha.
+            It is added as a checkbox in docs/BACKLOG.md. The version decides which archive it
+            goes to when you mark it done.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="grid gap-3">
           <div className="grid gap-1.5">
-            <Label htmlFor="task-title">Título</Label>
+            <Label htmlFor="task-title">Title</Label>
             <Input
               id="task-title"
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder="Reintentar la sync si se corta la red"
+              placeholder="Retry the sync if the network drops"
               required
             />
           </div>
@@ -465,40 +465,40 @@ function NewTaskDialog({
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="task-version">Versión</Label>
+              <Label htmlFor="task-version">Version</Label>
               <select
                 id="task-version"
                 value={version}
                 onChange={(event) => setVersion(event.target.value)}
                 className="select-field"
               >
-                <option value="">Sin versión</option>
+                <option value="">No version</option>
                 {openVersions.map((entry) => (
                   <option key={entry.id} value={entry.id}>
                     {entry.id}
-                    {entry.status === "doing" ? " · en curso" : ""}
+                    {entry.status === "doing" ? " · in progress" : ""}
                   </option>
                 ))}
               </select>
             </div>
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="task-status">Lista</Label>
+            <Label htmlFor="task-status">List</Label>
             <select
               id="task-status"
               value={status}
               onChange={(event) => setStatus(event.target.value as TaskStatus)}
               className="select-field"
             >
-              <option value="backlog">Pendiente</option>
-              <option value="doing">En curso</option>
-              <option value="done">Hecho</option>
+              <option value="backlog">To do</option>
+              <option value="doing">In progress</option>
+              <option value="done">Done</option>
             </select>
           </div>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <DialogFooter>
             <Button type="submit" disabled={pending}>
-              {pending ? "Escribiendo…" : "Escribir en el backlog"}
+              {pending ? "Writing…" : "Write to the backlog"}
             </Button>
           </DialogFooter>
         </form>
@@ -535,13 +535,13 @@ function NewVersionDialog({
         body: JSON.stringify({ versionId, title, status }),
       });
       onCreated(next);
-      toast(status === "doing" ? `${versionId} queda en curso.` : `${versionId} queda prevista.`);
+      toast(status === "doing" ? `${versionId} is now in progress.` : `${versionId} is now planned.`);
       setOpen(false);
       setVersionId("");
       setTitle("");
       setStatus("planned");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No pude crear la versión.");
+      setError(err instanceof Error ? err.message : "Couldn't create the version.");
     } finally {
       setPending(false);
     }
@@ -551,21 +551,22 @@ function NewVersionDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" disabled={disabled}>
-          Nueva versión
+          New version
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-heading text-xl">Nueva versión</DialogTitle>
+          <DialogTitle className="font-heading text-xl">New version</DialogTitle>
           <DialogDescription>
-            Añade la línea en VERSIONS.md, el punto del roadmap y un archive vacío. Si la dejas en
-            curso, la que estaba en curso pasa a previstas. Publicarla es cerrarla en el roadmap.
+            Adds the line in VERSIONS.md, the roadmap stop, and an empty archive. If you set it
+            in progress, the previous in-progress version becomes planned. Publishing closes it
+            on the roadmap.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="grid gap-3">
           <div className="grid grid-cols-2 gap-3">
             <div className="grid gap-1.5">
-              <Label htmlFor="version-id">Versión</Label>
+              <Label htmlFor="version-id">Version</Label>
               <Input
                 id="version-id"
                 value={versionId}
@@ -576,20 +577,20 @@ function NewVersionDialog({
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="version-status">Estado</Label>
+              <Label htmlFor="version-status">Status</Label>
               <select
                 id="version-status"
                 value={status}
                 onChange={(event) => setStatus(event.target.value as "planned" | "doing")}
                 className="select-field"
               >
-                <option value="planned">Prevista</option>
-                <option value="doing">En curso</option>
+                <option value="planned">Planned</option>
+                <option value="doing">In progress</option>
               </select>
             </div>
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="version-title">Título</Label>
+            <Label htmlFor="version-title">Title</Label>
             <Input
               id="version-title"
               value={title}
@@ -601,7 +602,7 @@ function NewVersionDialog({
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <DialogFooter>
             <Button type="submit" disabled={pending}>
-              {pending ? "Creando…" : "Crear versión"}
+              {pending ? "Creating…" : "Create version"}
             </Button>
           </DialogFooter>
         </form>

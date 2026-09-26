@@ -16,22 +16,22 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   const body = (await request.json().catch(() => null)) as { versionId?: unknown } | null;
   const versionId = typeof body?.versionId === "string" ? body.versionId.trim() : "";
-  if (!versionId) return jsonError("Falta la versión.");
+  if (!versionId) return jsonError("The version is missing.");
 
   const root = resolveProjectPath(project.path);
   const timeline = await loadVersions(root);
-  if (!timeline.file) return jsonError("No encuentro VERSIONS.md.");
+  if (!timeline.file) return jsonError("VERSIONS.md is missing.");
   const absolute = safeProjectFile(root, timeline.file);
-  if (!absolute) return jsonError("La ruta de VERSIONS.md no es válida.");
+  if (!absolute) return jsonError("The VERSIONS.md path is not valid.");
 
   const current = await fs.readFile(absolute, "utf8");
   const published = publishVersion(current, versionId);
   if (!published.changed) {
-    return jsonError("Esa versión no está en VERSIONS.md, o ya está publicada.");
+    return jsonError("That version is not in VERSIONS.md, or it is already published.");
   }
   await fs.writeFile(absolute, published.content);
 

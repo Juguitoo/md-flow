@@ -19,9 +19,9 @@ import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 const STATUSES: { status: TaskStatus; label: string }[] = [
-  { status: "backlog", label: "Pendiente" },
-  { status: "doing", label: "En curso" },
-  { status: "done", label: "Hecha" },
+  { status: "backlog", label: "To do" },
+  { status: "doing", label: "In progress" },
+  { status: "done", label: "Done" },
 ];
 
 export function TaskDetail({
@@ -85,7 +85,7 @@ export function TaskDetail({
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setFichaError(err instanceof Error ? err.message : "No pude leer la ficha.");
+          setFichaError(err instanceof Error ? err.message : "Couldn't read the note.");
         }
       })
       .finally(() => {
@@ -111,9 +111,9 @@ export function TaskDetail({
       setSavedSections(sections);
       setEditing(null);
       onSaved(result.detail);
-      toast(path ? "Ficha guardada." : "Ficha creada.");
+      toast(path ? "Note saved." : "Note created.");
     } catch (err) {
-      setFichaError(err instanceof Error ? err.message : "No pude guardar la ficha.");
+      setFichaError(err instanceof Error ? err.message : "Couldn't save the note.");
     } finally {
       setSaving(false);
     }
@@ -128,9 +128,9 @@ export function TaskDetail({
         body: JSON.stringify({ file: task.file, line: task.line, version }),
       });
       onSaved(next);
-      toast(version ? `Versión ${version}.` : "Sin versión.");
+      toast(version ? `Version ${version}.` : "No version.");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pude cambiar la versión.");
+      toast.error(err instanceof Error ? err.message : "Couldn't change the version.");
     } finally {
       setSavingVersion(false);
     }
@@ -139,7 +139,7 @@ export function TaskDetail({
   async function removeTask() {
     if (!task.file || task.line === null) return;
     const label = task.id ?? task.title;
-    if (!window.confirm(`¿Quitar ${label} del backlog? La ficha, si existe, se queda en el disco.`)) {
+    if (!window.confirm(`Remove ${label} from the backlog? The note file, if any, stays on disk.`)) {
       return;
     }
     setDeleting(true);
@@ -150,9 +150,9 @@ export function TaskDetail({
       });
       onSaved(next);
       onClose();
-      toast(`Quité ${label}.`);
+      toast(`Removed ${label}.`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pude quitar la tarea.");
+      toast.error(err instanceof Error ? err.message : "Couldn't remove the task.");
     } finally {
       setDeleting(false);
     }
@@ -164,7 +164,7 @@ export function TaskDetail({
     <article className="mx-auto w-full max-w-3xl">
       <Button variant="ghost" size="sm" className="-ml-2" onClick={onClose}>
         <ArrowLeft />
-        Volver a la lista
+        Back to the list
       </Button>
       <div className="mt-6">
         {task.id ? (
@@ -174,7 +174,7 @@ export function TaskDetail({
           {task.title}
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          {[task.version, task.taskType, fileRef].filter(Boolean).join(" · ") || "Sin versión"}
+          {[task.version, task.taskType, fileRef].filter(Boolean).join(" · ") || "No version"}
         </p>
         {task.file ? (
           <p className="mt-1 font-mono text-[11px] text-muted-foreground">
@@ -205,18 +205,18 @@ export function TaskDetail({
           ))}
           <span className="mx-1 hidden h-5 w-px bg-border sm:block" aria-hidden />
           <label className="text-xs text-muted-foreground">
-            <span className="sr-only">Versión</span>
+            <span className="sr-only">Version</span>
             <select
               value={version}
               onChange={(event) => setVersion(event.target.value)}
               className="select-field"
-              aria-label="Versión"
+              aria-label="Version"
             >
-              <option value="">Sin versión</option>
+              <option value="">No version</option>
               {versionOptions.map((entry) => (
                 <option key={entry.id} value={entry.id}>
                   {entry.id}
-                  {entry.status === "doing" ? " · en curso" : ""}
+                  {entry.status === "doing" ? " · in progress" : ""}
                 </option>
               ))}
             </select>
@@ -227,15 +227,15 @@ export function TaskDetail({
             disabled={savingVersion || version === (task.version ?? "")}
             onClick={() => void saveVersion()}
           >
-            {savingVersion ? "Guardando…" : "Guardar"}
+            {savingVersion ? "Saving…" : "Save"}
           </Button>
           <Button
             size="icon-sm"
             variant="ghost"
             className="ml-auto text-muted-foreground"
             disabled={deleting}
-            aria-label="Eliminar tarea"
-            title="Eliminar tarea"
+            aria-label="Delete task"
+            title="Delete task"
             onClick={() => void removeTask()}
           >
             <Trash2 />
@@ -253,7 +253,7 @@ export function TaskDetail({
           }}
         >
           <label className="grid gap-1 text-xs text-muted-foreground">
-            Hash del commit
+            Commit hash
             <Input
               value={commit}
               onChange={(event) => setCommit(event.target.value)}
@@ -263,7 +263,7 @@ export function TaskDetail({
             />
           </label>
           <Button type="submit" size="sm" disabled={pending}>
-            {pending ? "Cerrando…" : "Cerrar tarea"}
+            {pending ? "Closing…" : "Close task"}
           </Button>
           <Button
             type="button"
@@ -274,11 +274,11 @@ export function TaskDetail({
               setCommit("");
             }}
           >
-            Cancelar
+            Cancel
           </Button>
           <p className="w-full text-xs text-muted-foreground">
-            Si hay varios, sepáralos con un espacio. Se guardan en el archive y, si el remoto es de
-            GitHub, abren el commit.
+            Separate several hashes with a space. They are stored in the archive and, if the
+            remote is on GitHub, they open the commit.
           </p>
         </form>
       ) : null}
@@ -290,12 +290,12 @@ export function TaskDetail({
           rel="noreferrer"
           className="mt-4 inline-block text-sm text-primary underline-offset-4 hover:underline"
         >
-          Abrir en GitHub
+          Open on GitHub
         </a>
       ) : null}
 
       <div className="mt-12 grid w-full gap-8">
-        {loading ? <p className="text-sm text-muted-foreground">Leyendo la ficha…</p> : null}
+        {loading ? <p className="text-sm text-muted-foreground">Reading the note…</p> : null}
         {fichaError ? <p className="text-sm text-destructive">{fichaError}</p> : null}
         {!loading && canEdit
           ? FICHA_SECTIONS.map((section) => {
@@ -304,14 +304,14 @@ export function TaskDetail({
               return (
                 <section key={section.id} className="grid gap-2 border-t border-border/70 pt-6 first:border-t-0 first:pt-0">
                   <div className="flex items-baseline justify-between gap-3">
-                    <h2 className="font-heading text-2xl tracking-tight">{section.title}</h2>
+                    <h2 className="font-heading text-2xl tracking-tight">{section.label}</h2>
                     {canEdit && !open ? (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setEditing(section.id)}
                       >
-                        Editar
+                        Edit
                       </Button>
                     ) : null}
                   </div>
@@ -327,11 +327,11 @@ export function TaskDetail({
                         }
                         rows={6}
                         autoFocus
-                        placeholder="Todavía no hay nada escrito."
+                        placeholder="Nothing written yet."
                       />
                       <div className="flex gap-2">
                         <Button onClick={() => void save()} disabled={saving}>
-                          {saving ? "Guardando…" : path ? "Guardar" : "Crear ficha"}
+                          {saving ? "Saving…" : path ? "Save" : "Create note"}
                         </Button>
                         <Button
                           variant="ghost"
@@ -344,14 +344,14 @@ export function TaskDetail({
                             setEditing(null);
                           }}
                         >
-                          Cancelar
+                          Cancel
                         </Button>
                       </div>
                     </>
                   ) : value.trim() ? (
                     <SectionText text={value} />
                   ) : (
-                    <p className="text-sm text-muted-foreground">Nada escrito.</p>
+                    <p className="text-sm text-muted-foreground">Nothing written.</p>
                   )}
                 </section>
               );
@@ -359,7 +359,7 @@ export function TaskDetail({
           : null}
         {!loading && !canEdit && !task.url ? (
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Esta tarea no tiene id, así que no puedo abrirle una ficha.
+            This task has no id, so I can't open a note for it.
           </p>
         ) : null}
         {task.body && task.source === "github" ? (

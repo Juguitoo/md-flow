@@ -58,8 +58,8 @@ export function TaskList({
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Buscar por id o título"
-          aria-label="Buscar por id o título"
+          placeholder="Search by id or title"
+          aria-label="Search by id or title"
           className="pl-8"
         />
       </div>
@@ -69,7 +69,7 @@ export function TaskList({
           selectedKey={selectedKey}
           onSelect={onSelect}
           onReorder={query.trim() ? undefined : onReorder}
-          empty={query.trim() ? "Ninguna tarea coincide." : "Nada abierto. Lo cerrado está en Versiones."}
+          empty={query.trim() ? "No task matches." : "Nothing open. Closed work is under Versions."}
         />
       </div>
     </div>
@@ -81,7 +81,7 @@ function TaskRows({
   selectedKey,
   onSelect,
   onReorder,
-  empty = "Nada abierto. Lo cerrado está en Versiones.",
+  empty = "Nothing open. Closed work is under Versions.",
 }: {
   tasks: Task[];
   selectedKey: string | null;
@@ -247,7 +247,7 @@ function TaskRows({
                 onSelect(task);
               }}
               aria-pressed={selected}
-              title={movable ? "Mantén pulsado para reordenar" : undefined}
+              title={movable ? "Hold to reorder" : undefined}
               className={cn(
                 "grid w-full grid-cols-[0.7rem_4.5rem_minmax(0,1fr)] items-center gap-x-3 rounded-xl px-3 py-2.5 text-left transition-colors sm:grid-cols-[0.7rem_5.25rem_minmax(0,1fr)_auto_4.5rem_minmax(0,8rem)]",
                 selected ? "bg-card shadow-sm ring-1 ring-foreground/10" : "hover:bg-card/70",
@@ -262,7 +262,7 @@ function TaskRows({
                     ? "bg-[oklch(0.78_0.15_95)] ring-[oklch(0.78_0.15_95)]/40"
                     : "bg-[oklch(0.62_0.13_145)] ring-[oklch(0.62_0.13_145)]/30",
                 )}
-                title={doing ? "En curso" : "Pendiente"}
+                title={doing ? "In progress" : "To do"}
                 aria-hidden
               />
               <span className="truncate font-mono text-[11px] text-primary">

@@ -27,8 +27,7 @@ const plex = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "Bitácora",
-  description:
-    "Tablero local para ver los proyectos y las tareas que ya escribes en markdown.",
+  description: "A local board for the tasks you already keep in markdown.",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
@@ -36,7 +35,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const projects = await loadSummaries();
   return (
     <html
-      lang="es"
+      lang="en"
       className={`${outfit.variable} ${newsreader.variable} ${plex.variable} h-full antialiased`}
       suppressHydrationWarning
     >

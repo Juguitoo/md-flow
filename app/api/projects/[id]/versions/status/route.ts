@@ -19,7 +19,7 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   const body = (await request.json().catch(() => null)) as {
     versionId?: unknown;
@@ -27,16 +27,16 @@ export async function POST(
   } | null;
   const versionId = typeof body?.versionId === "string" ? body.versionId.trim() : "";
   const status = typeof body?.status === "string" ? body.status : "";
-  if (!versionId) return jsonError("Falta la versión.");
+  if (!versionId) return jsonError("The version is missing.");
   if (!STATUSES.includes(status as VersionStatus)) {
-    return jsonError("Elige prevista, en curso o publicada.");
+    return jsonError("Choose planned, in progress, or published.");
   }
 
   const root = resolveProjectPath(project.path);
   const timeline = await loadVersions(root);
-  if (!timeline.file) return jsonError("No encuentro VERSIONS.md.");
+  if (!timeline.file) return jsonError("VERSIONS.md is missing.");
   const absolute = safeProjectFile(root, timeline.file);
-  if (!absolute) return jsonError("La ruta de VERSIONS.md no es válida.");
+  if (!absolute) return jsonError("The VERSIONS.md path is not valid.");
 
   const current = await fs.readFile(absolute, "utf8");
   const demoted = timeline.versions
@@ -44,7 +44,7 @@ export async function POST(
     .map((entry) => entry.id);
   const moved = moveVersion(current, versionId, status as VersionStatus);
   if (!moved.changed && !timeline.versions.some((entry) => entry.id === versionId)) {
-    return jsonError("Esa versión no está en VERSIONS.md.");
+    return jsonError("That version is not in VERSIONS.md.");
   }
   if (moved.changed) await fs.writeFile(absolute, moved.content);
 

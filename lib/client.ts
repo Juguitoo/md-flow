@@ -7,7 +7,7 @@ export async function api<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { ...init, headers });
   const data = (await response.json().catch(() => ({}))) as { error?: string };
   if (!response.ok) {
-    throw new Error(data.error || "No se pudo completar la petición.");
+    throw new Error(data.error || "The request could not be completed.");
   }
   return data as T;
 }
@@ -15,7 +15,7 @@ export async function api<T>(url: string, init?: RequestInit): Promise<T> {
 export function formatTime(iso: string): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat("es", {
+  return new Intl.DateTimeFormat("en-GB", {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);

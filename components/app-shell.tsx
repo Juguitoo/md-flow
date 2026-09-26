@@ -21,12 +21,12 @@ function ThemeToggle({ compact = false }: { compact?: boolean }) {
       variant="ghost"
       size={compact ? "icon-sm" : "sm"}
       className={compact ? "text-muted-foreground" : "w-full justify-start text-muted-foreground"}
-      aria-label={dark ? "Modo claro" : "Modo oscuro"}
-      title={dark ? "Modo claro" : "Modo oscuro"}
+      aria-label={dark ? "Light mode" : "Dark mode"}
+      title={dark ? "Light mode" : "Dark mode"}
       onClick={() => setTheme(dark ? "light" : "dark")}
     >
       {dark ? <Sun /> : <Moon />}
-      {compact ? null : dark ? "Modo claro" : "Modo oscuro"}
+      {compact ? null : dark ? "Light mode" : "Dark mode"}
     </Button>
   );
 }
@@ -34,7 +34,7 @@ function ThemeToggle({ compact = false }: { compact?: boolean }) {
 function LiveStatus({ compact = false, hideLabel = false }: { compact?: boolean; hideLabel?: boolean }) {
   const { live } = useBitacora();
   const label =
-    live === "on" ? "Escuchando archivos" : live === "off" ? "Sin conexión en vivo" : "Conectando";
+    live === "on" ? "Watching files" : live === "off" ? "Live updates off" : "Connecting";
   return (
     <p
       className={cn("flex items-center gap-2 text-xs text-muted-foreground", compact && "text-[11px]")}
@@ -88,7 +88,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <ThemeToggle compact />
             <AddProjectDialog
               trigger={
-                <Button size="icon-sm" variant="outline" aria-label="Añadir proyecto">
+                <Button size="icon-sm" variant="outline" aria-label="Add project">
                   <Plus />
                 </Button>
               }
@@ -97,7 +97,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
         <nav className="mt-3 flex gap-2 overflow-x-auto pb-1">
           <ShellLink href="/" active={pathname === "/"}>
-            Proyectos
+            Projects
           </ShellLink>
           {projects.map((project) => (
             <ShellLink
@@ -109,7 +109,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </ShellLink>
           ))}
           <ShellLink href="/como-funciona" active={pathname === "/como-funciona"}>
-            Cómo funciona
+            How it works
           </ShellLink>
         </nav>
       </header>
@@ -127,7 +127,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               variant="ghost"
               onClick={toggleNav}
               aria-expanded={false}
-              aria-label="Abrir la navegación"
+              aria-label="Open navigation"
             >
               <PanelLeftOpen />
             </Button>
@@ -136,14 +136,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-start justify-between gap-2">
             <Link href="/" className="min-w-0 px-2">
               <p className="font-heading text-3xl leading-none tracking-tight">Bitácora</p>
-              <p className="mt-2 text-xs text-muted-foreground">Tus markdown, en vivo</p>
+              <p className="mt-2 text-xs text-muted-foreground">Your markdown, live</p>
             </Link>
             <Button
               size="icon-sm"
               variant="ghost"
               onClick={toggleNav}
               aria-expanded
-              aria-label="Plegar la navegación"
+              aria-label="Collapse navigation"
             >
               <PanelLeftClose />
             </Button>
@@ -177,15 +177,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="mt-4 grid justify-items-center gap-2">
               <AddProjectDialog
                 trigger={
-                  <Button size="icon-sm" variant="outline" aria-label="Añadir proyecto">
+                  <Button size="icon-sm" variant="outline" aria-label="Add project">
                     <Plus />
                   </Button>
                 }
               />
               <Link
                 href="/como-funciona"
-                title="Cómo funciona"
-                aria-label="Cómo funciona"
+                title="How it works"
+                aria-label="How it works"
                 className={cn(
                   "flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
                   pathname === "/como-funciona" && "bg-muted text-foreground",
@@ -203,7 +203,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <nav className="mt-8 flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
               <p className="px-2 pb-1 text-[11px] tracking-wide text-muted-foreground uppercase">
-                Proyectos
+                Projects
               </p>
               {projects.map((project) => (
                 <Link
@@ -219,7 +219,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Link>
               ))}
               {projects.length === 0 ? (
-                <p className="px-2 text-sm text-muted-foreground">Todavía no hay carpetas.</p>
+                <p className="px-2 text-sm text-muted-foreground">No folders yet.</p>
               ) : null}
             </nav>
             <div className="mt-4 grid gap-2">
@@ -227,7 +227,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 trigger={
                   <Button variant="outline" className="w-full justify-start">
                     <Plus />
-                    Añadir proyecto
+                    Add project
                   </Button>
                 }
               />
@@ -238,7 +238,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   pathname === "/como-funciona" && "bg-muted text-foreground",
                 )}
               >
-                Cómo funciona
+                How it works
               </Link>
               <ThemeToggle />
             </div>

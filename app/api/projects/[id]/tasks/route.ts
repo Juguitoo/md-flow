@@ -22,7 +22,7 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   const body = (await request.json().catch(() => null)) as {
     title?: unknown;
@@ -32,30 +32,30 @@ export async function POST(
   } | null;
 
   const title = typeof body?.title === "string" ? body.title.trim() : "";
-  if (!title) return jsonError("Escribe un título.");
-  if (title.length > 180) return jsonError("El título es demasiado largo.");
+  if (!title) return jsonError("Write a title.");
+  if (title.length > 180) return jsonError("The title is too long.");
 
   const status = body?.status;
   if (typeof status !== "string" || !STATUSES.includes(status as TaskStatus)) {
-    return jsonError("Elige un estado.");
+    return jsonError("Choose a status.");
   }
 
   const version = typeof body?.version === "string" ? body.version.trim() : "";
   if (version && !VERSION_ID.test(version)) {
-    return jsonError("La versión tiene que parecerse a v1.2.3.");
+    return jsonError("The version should look like v1.2.3.");
   }
 
   const ticketId = typeof body?.ticketId === "string" ? body.ticketId.trim() : "";
   if (ticketId && !/^[A-Za-z][A-Za-z0-9]*-\d+$/.test(ticketId)) {
-    return jsonError("El id tiene que parecerse a DATA-014.");
+    return jsonError("The id should look like DATA-014.");
   }
 
   const root = resolveProjectPath(project.path);
   if (version) {
     const timeline = await loadVersions(root);
     const known = timeline.versions.find((entry) => entry.id === version);
-    if (!known) return jsonError(`${version} no está en VERSIONS.md. Créala antes.`);
-    if (known.status === "published") return jsonError(`${version} ya está publicada.`);
+    if (!known) return jsonError(`${version} is not in VERSIONS.md. Create it first.`);
+    if (known.status === "published") return jsonError(`${version} is already published.`);
   }
   const relative = await backlogFile(root);
   const backlogPath = path.join(root, relative);

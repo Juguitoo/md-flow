@@ -12,17 +12,17 @@ export async function PUT(
 ) {
   const { id } = await context.params;
   const existing = await getProject(id);
-  if (!existing) return jsonError("No encuentro ese proyecto.", 404);
+  if (!existing) return jsonError("That project is not on the board.", 404);
 
   const body = (await request.json().catch(() => null)) as { repo?: unknown } | null;
   const raw = typeof body?.repo === "string" ? body.repo.trim() : "";
   const repo = raw ? parseRepo(raw) : null;
   if (raw && !repo) {
-    return jsonError("Usa owner/repositorio o la URL de GitHub.");
+    return jsonError("Use owner/repo or the GitHub URL.");
   }
 
   const updated = await updateGithub(id, repo);
-  if (!updated) return jsonError("No encuentro ese proyecto.", 404);
+  if (!updated) return jsonError("That project is not on the board.", 404);
   clearGithubCache();
 
   const detail = await scanProject(updated);

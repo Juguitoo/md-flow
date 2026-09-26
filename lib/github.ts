@@ -111,7 +111,7 @@ export async function fetchGithubIssues(
     if (response.status === 404) {
       const result = {
         tasks: [],
-        error: "GitHub no encuentra ese repositorio, o es privado y falta un token.",
+        error: "GitHub cannot find that repository, or it is private and a token is missing.",
         truncated: false,
       };
       cache.set(repo, { ...result, at: Date.now() });
@@ -123,8 +123,8 @@ export async function fetchGithubIssues(
       const result = {
         tasks: [],
         error: limited
-          ? "GitHub ha limitado las peticiones. Añade un token o espera un poco."
-          : "GitHub ha rechazado el acceso. Revisa el token o si el repositorio es privado.",
+          ? "GitHub is rate-limiting requests. Add a token or wait a moment."
+          : "GitHub refused access. Check the token, or whether the repository is private.",
         truncated: false,
       };
       cache.set(repo, { ...result, at: Date.now() });
@@ -134,7 +134,7 @@ export async function fetchGithubIssues(
     if (!response.ok) {
       const result = {
         tasks: [],
-        error: `GitHub respondió con un error ${response.status}.`,
+        error: `GitHub returned an error ${response.status}.`,
         truncated: false,
       };
       cache.set(repo, { ...result, at: Date.now() });

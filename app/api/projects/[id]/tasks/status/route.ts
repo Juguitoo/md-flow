@@ -35,7 +35,7 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   const body = (await request.json().catch(() => null)) as {
     file?: unknown;
@@ -44,10 +44,10 @@ export async function POST(
     commit?: unknown;
   } | null;
   if (!body || typeof body.file !== "string" || typeof body.line !== "number") {
-    return jsonError("Faltan el archivo y la línea.");
+    return jsonError("The file and line are missing.");
   }
   if (typeof body.status !== "string" || !MOVABLE.includes(body.status as TaskStatus)) {
-    return jsonError("Elige pendiente, en curso o hecha.");
+    return jsonError("Choose to do, in progress, or done.");
   }
   const status = body.status as TaskStatus;
 
@@ -55,31 +55,31 @@ export async function POST(
   const absolute = safeProjectFile(root, body.file);
   const discovered = await discoverFiles(root);
   if (!absolute || !discovered.includes(body.file)) {
-    return jsonError("Ese archivo no forma parte de la lista.");
+    return jsonError("That file is not part of the list.");
   }
 
   const content = await fs.readFile(absolute, "utf8");
   const task = parseMarkdown(content, body.file).find((entry) => entry.line === body.line);
-  if (!task) return jsonError("No encuentro esa tarea.");
+  if (!task) return jsonError("I can't find that task.");
 
   if (status === "done") {
-    if (!task.id) return jsonError("Ponle un id antes de darla por hecha.");
+    if (!task.id) return jsonError("Give it an id before marking it done.");
     const timeline = await loadVersions(root);
     const doing = timeline.versions.filter((entry) => entry.status === "doing");
     if (!task.version && doing.length > 1) {
-      return jsonError("Hay varias versiones en curso. Indica la versión en la tarea.");
+      return jsonError("Several versions are in progress. Set the version on the task.");
     }
     const version = versionFor(task, timeline.versions);
     if (!version) {
       return jsonError(
         task.version
           ? `${task.version} no está en VERSIONS.md.`
-          : "Esta tarea no tiene versión y no hay ninguna en curso.",
+          : "This task has no version, and none is in progress.",
       );
     }
-    if (!version.archive) return jsonError(`${version.id} no tiene archive en VERSIONS.md.`);
+    if (!version.archive) return jsonError(`${version.id} has no archive in VERSIONS.md.`);
     const archiveAbsolute = safeProjectFile(root, version.archive);
-    if (!archiveAbsolute) return jsonError("La ruta del archive no es válida.");
+    if (!archiveAbsolute) return jsonError("The archive path is not valid.");
 
     let note = "";
     const notePath = fichaPath(task);
@@ -106,7 +106,7 @@ export async function POST(
       note,
     });
     const removed = removeTask(content, body.line);
-    if (!removed.changed) return jsonError("No pude sacar la tarea del backlog.");
+    if (!removed.changed) return jsonError("Couldn't remove the task from the backlog.");
 
     await fs.mkdir(path.dirname(archiveAbsolute), { recursive: true });
     await fs.writeFile(archiveAbsolute, nextArchive);

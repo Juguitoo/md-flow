@@ -1,55 +1,53 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Cómo funciona · Bitácora",
+  title: "How it works · Bitácora",
 };
 
 export default function HowPage() {
   return (
     <article className="mx-auto w-full max-w-2xl px-4 py-8 md:px-8 md:py-12">
-      <p className="text-xs tracking-wide text-muted-foreground uppercase">La idea</p>
+      <p className="text-xs tracking-wide text-muted-foreground uppercase">The idea</p>
       <h1 className="mt-2 font-heading text-4xl tracking-tight md:text-5xl">
-        El backlog sigue en el repo. El tablero solo lo mira.
+        The backlog stays in the repo. The board only reads it.
       </h1>
       <div className="mt-8 space-y-5 text-base leading-relaxed text-foreground/90">
         <p>
-          Bitácora es un servidor local. Arranca en tu máquina, lee las carpetas que le indiques y
-          enseña las tareas que ya tienes escritas en markdown. No sustituye a BACKLOG.md: ese
-          archivo sigue siendo la fuente.
+          Bitácora is a local server. It runs on your machine, reads the folders you point it at,
+          and shows the tasks you already wrote in markdown. It does not replace BACKLOG.md: that
+          file is still the source.
         </p>
-        <h2 className="pt-4 font-heading text-3xl tracking-tight">¿Se actualiza solo?</h2>
+        <h2 className="pt-4 font-heading text-3xl tracking-tight">Does it update on its own?</h2>
         <p>
-          Sí, mientras Bitácora esté en marcha en el mismo ordenador donde editas. Vigila la
-          carpeta del proyecto. En cuanto guardas BACKLOG.md, ROADMAP.md o KNOWN_ISSUES.md, el
-          tablero vuelve a leer el archivo y mueve las tarjetas. No hace falta recargar ni pulsar
-          un botón de sync.
-        </p>
-        <p>
-          También al revés: si marcas una tarea en el tablero, Bitácora cambia el checkbox de esa
-          línea. Si creas una tarea desde aquí, la escribe en BACKLOG.md. El editor y la web
-          miran el mismo archivo.
+          Yes, while Bitácora is running on the same computer where you edit. It watches the
+          project folder. As soon as you save BACKLOG.md, ROADMAP.md, or KNOWN_ISSUES.md, the
+          board reads the file again. There is no reload and no sync button.
         </p>
         <p>
-          Lo que no hace es enterarse de un cambio en otro ordenador hasta que ese cambio llega al
-          disco de esta máquina. Un <span className="font-mono text-sm">git pull</span> sí lo
-          dispara, porque el archivo cambia aquí.
-        </p>
-        <h2 className="pt-4 font-heading text-3xl tracking-tight">¿Y los commits?</h2>
-        <p>
-          Al dar una tarea por hecha puedes anotar el hash. Bitácora lo guarda en el archive y, si
-          el remoto <span className="font-mono text-sm">origin</span> de esa carpeta es de GitHub,
-          el hash abre el commit. No hace falta conectar issues ni un token.
-        </p>
-        <h2 className="pt-4 font-heading text-3xl tracking-tight">Qué archivos entiende</h2>
-        <p>
-          En la raíz del proyecto, y también dentro de <span className="font-mono text-sm">docs/</span>:
-          BACKLOG.md, ROADMAP.md, KNOWN_ISSUES.md, TASKS.md, TODO.md e ISSUES.md. Una sección
-          llamada Pendiente, En curso o Hecho coloca la tarea en esa columna. Un{" "}
-          <span className="font-mono text-sm">[x]</span> la da por cerrada.
+          The other way works too: marking a task on the board changes that line. Creating a task
+          here writes it into BACKLOG.md. The editor and the web look at the same file.
         </p>
         <p>
-          Si tus notas viven en otro sitio, un <span className="font-mono text-sm">bitacora.json</span> en
-          la raíz puede listar más archivos:
+          A change on another computer shows up only after it lands on this disk. A{" "}
+          <span className="font-mono text-sm">git pull</span> does that, because the file changes
+          here.
+        </p>
+        <h2 className="pt-4 font-heading text-3xl tracking-tight">What about commits?</h2>
+        <p>
+          When you mark a task done you can note the hash. Bitácora stores it in the archive and,
+          if that folder&apos;s <span className="font-mono text-sm">origin</span> remote is on
+          GitHub, the hash opens the commit. You do not need issues or a token.
+        </p>
+        <h2 className="pt-4 font-heading text-3xl tracking-tight">Which files it reads</h2>
+        <p>
+          In the project root, and also inside <span className="font-mono text-sm">docs/</span>:
+          BACKLOG.md, ROADMAP.md, KNOWN_ISSUES.md, TASKS.md, TODO.md, and ISSUES.md. A section
+          named Pendiente, En curso, or Hecho (or To do, In progress, Done) places the task. A{" "}
+          <span className="font-mono text-sm">[x]</span> marks it closed.
+        </p>
+        <p>
+          If your notes live somewhere else, a <span className="font-mono text-sm">bitacora.json</span>{" "}
+          in the root can list more files:
         </p>
       </div>
       <pre className="mt-4 overflow-x-auto rounded-xl bg-card p-4 font-mono text-xs leading-relaxed ring-1 ring-foreground/10">
@@ -58,15 +56,15 @@ export default function HowPage() {
 }`}
       </pre>
       <div className="mt-8 space-y-5 text-base leading-relaxed">
-        <h2 className="font-heading text-3xl tracking-tight">Qué no es</h2>
+        <h2 className="font-heading text-3xl tracking-tight">What it is not</h2>
         <p>
-          No es un gestor que se lleve las tareas a una base de datos propia, ni un sustituto de
-          GitHub Projects. Si apagas el servidor, el tablero desaparece y los markdown se quedan
-          exactamente donde estaban.
+          It is not a manager that moves tasks into its own database, and it is not a stand-in for
+          GitHub Projects. If you stop the server, the board goes away and the markdown stays
+          exactly where it was.
         </p>
         <p>
-          Tampoco lo expongas a internet. Quien pueda abrir esta web puede leer las carpetas que
-          hayas registrado y escribir en sus backlog.
+          Do not expose it to the internet. Anyone who can open this site can read the folders you
+          registered and write to their backlogs.
         </p>
       </div>
     </article>

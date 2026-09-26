@@ -42,7 +42,7 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   const body = (await request.json().catch(() => null)) as {
     file?: unknown;
@@ -50,33 +50,33 @@ export async function POST(
     sections?: unknown;
   } | null;
   if (!body || typeof body.file !== "string" || typeof body.line !== "number") {
-    return jsonError("Faltan el archivo y la línea.");
+    return jsonError("The file and line are missing.");
   }
   const sections = readSections(body.sections);
-  if (!sections) return jsonError("Las secciones de la ficha no son válidas.");
+  if (!sections) return jsonError("The note sections are not valid.");
 
   const root = resolveProjectPath(project.path);
   const backlogAbsolute = safeProjectFile(root, body.file);
   const discovered = await discoverFiles(root);
   if (!backlogAbsolute || !discovered.includes(body.file)) {
-    return jsonError("Ese archivo no forma parte de la lista.");
+    return jsonError("That file is not part of the list.");
   }
 
   const backlog = await fs.readFile(backlogAbsolute, "utf8");
   const task = parseMarkdown(backlog, body.file).find((entry) => entry.line === body.line);
-  if (!task || !task.toggleable) return jsonError("Esa línea ya no es una tarea.", 409);
+  if (!task || !task.toggleable) return jsonError("That line is no longer a task.", 409);
 
   let relative = fichaPath(task);
   let created = false;
   if (!relative) {
-    if (!task.id) return jsonError("Esta tarea no tiene id, así que no puedo crear su ficha.");
+    if (!task.id) return jsonError("This task has no id, so I can't create its note.");
     relative = defaultFichaFile(body.file, task.id);
-    if (!relative) return jsonError("El id de la tarea no vale como nombre de archivo.");
+    if (!relative) return jsonError("That task id is not a valid file name.");
     created = true;
   }
 
   const absolute = safeProjectFile(root, relative);
-  if (!absolute) return jsonError("Esa ficha no se puede guardar.");
+  if (!absolute) return jsonError("That note cannot be saved.");
 
   let preamble = "";
   let extras: { title: string; body: string }[] = [];

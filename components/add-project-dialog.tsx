@@ -34,7 +34,7 @@ export function AddProjectDialog({ trigger }: { trigger: React.ReactNode }) {
       const result = await api<{ path: string | null }>("/api/projects/pick", { method: "POST" });
       if (result.path) setPath(result.path);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No pude abrir el selector.");
+      setError(err instanceof Error ? err.message : "Couldn't open the folder picker.");
     } finally {
       setPicking(false);
     }
@@ -53,14 +53,14 @@ export function AddProjectDialog({ trigger }: { trigger: React.ReactNode }) {
       const files = detail.files.map((file) => file.path);
       toast(
         files.length
-          ? `${detail.name} añadido. Encontré ${files.join(", ")}.`
-          : `${detail.name} añadido. No encontré BACKLOG.md todavía.`,
+          ? `${detail.name} added. Found ${files.join(", ")}.`
+          : `${detail.name} added. No BACKLOG.md yet.`,
       );
       setOpen(false);
       setPath("");
       setName("");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No pude añadir el proyecto.");
+      setError(err instanceof Error ? err.message : "Couldn't add the project.");
     } finally {
       setPending(false);
     }
@@ -71,14 +71,14 @@ export function AddProjectDialog({ trigger }: { trigger: React.ReactNode }) {
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-heading text-xl">Añadir proyecto</DialogTitle>
+          <DialogTitle className="font-heading text-xl">Add project</DialogTitle>
           <DialogDescription>
-            Elige la carpeta del proyecto. Si el selector no sale, puedes pegar la ruta.
+            Choose the project folder. If the picker does not appear, paste the path.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="grid gap-3">
           <div className="grid gap-1.5">
-            <Label htmlFor="project-path">Carpeta</Label>
+            <Label htmlFor="project-path">Folder</Label>
             <div className="flex gap-2">
               <Input
                 id="project-path"
@@ -94,12 +94,12 @@ export function AddProjectDialog({ trigger }: { trigger: React.ReactNode }) {
                 disabled={picking || pending}
                 onClick={() => void chooseFolder()}
               >
-                {picking ? "Eligiendo…" : "Elegir"}
+                {picking ? "Choosing…" : "Choose"}
               </Button>
             </div>
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="project-name">Nombre (opcional)</Label>
+            <Label htmlFor="project-name">Name (optional)</Label>
             <Input
               id="project-name"
               value={name}
@@ -111,7 +111,7 @@ export function AddProjectDialog({ trigger }: { trigger: React.ReactNode }) {
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <DialogFooter>
             <Button type="submit" disabled={pending || picking || !path.trim()}>
-              {pending ? "Buscando…" : "Añadir"}
+              {pending ? "Looking…" : "Add"}
             </Button>
           </DialogFooter>
         </form>

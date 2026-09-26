@@ -15,7 +15,7 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   const body = (await request.json().catch(() => null)) as {
     file?: unknown;
@@ -28,26 +28,26 @@ export async function POST(
     typeof body.fromLine !== "number" ||
     typeof body.toLine !== "number"
   ) {
-    return jsonError("Faltan el archivo y las dos líneas.");
+    return jsonError("The file and both lines are missing.");
   }
 
   const root = resolveProjectPath(project.path);
   const absolute = safeProjectFile(root, body.file);
   const discovered = await discoverFiles(root);
   if (!absolute || !discovered.includes(body.file)) {
-    return jsonError("Ese archivo no forma parte de la lista.");
+    return jsonError("That file is not part of the list.");
   }
 
   const content = await fs.readFile(absolute, "utf8");
   const tasks = parseMarkdown(content, body.file);
   const from = tasks.find((entry) => entry.line === body.fromLine);
   const to = tasks.find((entry) => entry.line === body.toLine);
-  if (!from || !to) return jsonError("No encuentro esas tareas.");
+  if (!from || !to) return jsonError("I can't find those tasks.");
   if (from.status !== to.status) {
-    return jsonError("El orden se cambia dentro de la misma sección.");
+    return jsonError("Reorder stays inside the same section.");
   }
   if (from.status === "backlog" && from.version !== to.version) {
-    return jsonError("El orden se cambia dentro de la misma versión.");
+    return jsonError("Reorder stays inside the same version.");
   }
 
   const moved = reorderTask(content, body.fromLine, body.toLine);

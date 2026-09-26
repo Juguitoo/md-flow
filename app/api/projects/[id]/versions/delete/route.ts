@@ -20,11 +20,11 @@ export async function POST(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   const body = (await request.json().catch(() => null)) as { versionId?: unknown } | null;
   const versionId = typeof body?.versionId === "string" ? body.versionId.trim() : "";
-  if (!versionId) return jsonError("Falta la versión.");
+  if (!versionId) return jsonError("The version is missing.");
 
   const root = resolveProjectPath(project.path);
   const before = await scanProject(project);
@@ -35,16 +35,16 @@ export async function POST(
   if (open.length > 0 || archived.length > 0) {
     const names = [...open, ...archived].map((task) => task.id ?? task.title);
     return jsonError(
-      `${versionId} todavía tiene tareas (${names.slice(0, 6).join(", ")}). Cámbiales la versión o ciérralas antes de borrarla.`,
+      `${versionId} still has tasks (${names.slice(0, 6).join(", ")}). Change their version or close them before deleting it.`,
     );
   }
 
   const timeline = await loadVersions(root);
-  if (!timeline.file) return jsonError("No encuentro VERSIONS.md.");
+  if (!timeline.file) return jsonError("VERSIONS.md is missing.");
   const entry = timeline.versions.find((item) => item.id === versionId);
-  if (!entry) return jsonError("Esa versión no está en VERSIONS.md.");
+  if (!entry) return jsonError("That version is not in VERSIONS.md.");
   const absolute = safeProjectFile(root, timeline.file);
-  if (!absolute) return jsonError("La ruta de VERSIONS.md no es válida.");
+  if (!absolute) return jsonError("The VERSIONS.md path is not valid.");
 
   const current = await fs.readFile(absolute, "utf8");
   const removed = removeVersion(current, versionId);

@@ -77,10 +77,10 @@ export async function addProject(input: {
   path: string;
 }): Promise<ProjectRecord> {
   const trimmed = input.path.trim();
-  if (!trimmed) throw new Error("Escribe la ruta de la carpeta.");
+  if (!trimmed) throw new Error("Write the folder path.");
   const absolute = resolveProjectPath(trimmed);
   if (!isDirectory(absolute)) {
-    throw new Error("No encuentro esa carpeta. Revisa la ruta.");
+    throw new Error("I can't find that folder. Check the path.");
   }
 
   return locked(async () => {
@@ -99,7 +99,7 @@ export async function addProject(input: {
       }
     }
     if (duplicate) {
-      throw new Error(`${duplicate.name} ya está en el tablero.`);
+      throw new Error(`${duplicate.name} is already on the board.`);
     }
 
     const name = input.name?.trim() || path.basename(real);

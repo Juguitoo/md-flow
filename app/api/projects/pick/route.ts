@@ -9,7 +9,7 @@ export async function POST() {
     const path = await pickFolder();
     return Response.json({ path });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "No pude abrir el selector.";
+    const message = error instanceof Error ? error.message : "Couldn't open the folder picker.";
     return jsonError(message);
   }
 }

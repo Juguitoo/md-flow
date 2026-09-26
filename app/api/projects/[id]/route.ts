@@ -12,7 +12,7 @@ export async function GET(
 ) {
   const { id } = await context.params;
   const project = await getProject(id);
-  if (!project) return jsonError("No encuentro ese proyecto.", 404);
+  if (!project) return jsonError("That project is not on the board.", 404);
 
   await getHub().sync();
   return Response.json(await scanProject(project));
@@ -24,7 +24,7 @@ export async function DELETE(
 ) {
   const { id } = await context.params;
   const removed = await removeProject(id);
-  if (!removed) return jsonError("No encuentro ese proyecto.", 404);
+  if (!removed) return jsonError("That project is not on the board.", 404);
   await getHub().sync();
   return Response.json({ ok: true });
 }
