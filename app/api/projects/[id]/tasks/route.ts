@@ -4,15 +4,17 @@ import { jsonError } from "@/lib/http";
 import { getHub } from "@/lib/hub";
 import { insertTask } from "@/lib/markdown";
 import { resolveProjectPath } from "@/lib/paths";
+import { backlogFile } from "@/lib/scaffold";
 import { getProject } from "@/lib/registry";
 import { scanProject } from "@/lib/scan";
-import type { Priority, TaskStatus } from "@/lib/types";
+import { loadVersions } from "@/lib/versions";
+import type { TaskStatus } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 const STATUSES: TaskStatus[] = ["backlog", "doing", "done", "roadmap", "issue"];
-const PRIORITIES: Priority[] = ["alta", "media", "baja"];
+const VERSION_ID = /^v\d+(?:\.\d+)+$/;
 
 export async function POST(
   request: Request,
@@ -26,7 +28,7 @@ export async function POST(
     title?: unknown;
     ticketId?: unknown;
     status?: unknown;
-    priority?: unknown;
+    version?: unknown;
   } | null;
 
   const title = typeof body?.title === "string" ? body.title.trim() : "";
@@ -38,12 +40,9 @@ export async function POST(
     return jsonError("Elige un estado.");
   }
 
-  const priority =
-    body?.priority === null || body?.priority === undefined || body?.priority === ""
-      ? null
-      : body.priority;
-  if (priority !== null && (typeof priority !== "string" || !PRIORITIES.includes(priority as Priority))) {
-    return jsonError("La prioridad tiene que ser alta, media o baja.");
+  const version = typeof body?.version === "string" ? body.version.trim() : "";
+  if (version && !VERSION_ID.test(version)) {
+    return jsonError("La versión tiene que parecerse a v1.2.3.");
   }
 
   const ticketId = typeof body?.ticketId === "string" ? body.ticketId.trim() : "";
@@ -52,7 +51,14 @@ export async function POST(
   }
 
   const root = resolveProjectPath(project.path);
-  const backlogPath = path.join(root, "BACKLOG.md");
+  if (version) {
+    const timeline = await loadVersions(root);
+    const known = timeline.versions.find((entry) => entry.id === version);
+    if (!known) return jsonError(`${version} no está en VERSIONS.md. Créala antes.`);
+    if (known.status === "published") return jsonError(`${version} ya está publicada.`);
+  }
+  const relative = await backlogFile(root);
+  const backlogPath = path.join(root, relative);
   let content = "";
   try {
     content = await fs.readFile(backlogPath, "utf8");
@@ -64,10 +70,11 @@ export async function POST(
     title,
     ticketId: ticketId || null,
     status: status as TaskStatus,
-    priority: priority as Priority | null,
+    version: version || null,
   });
+  await fs.mkdir(path.dirname(backlogPath), { recursive: true });
   await fs.writeFile(backlogPath, next);
   await getHub().sync();
-  getHub().broadcast({ projectId: id, file: "BACKLOG.md" });
+  getHub().broadcast({ projectId: id, file: relative });
   return Response.json(await scanProject(project), { status: 201 });
 }

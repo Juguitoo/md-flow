@@ -1,9 +1,9 @@
 "use client";
 
 import { useBitacora } from "@/components/bitacora-provider";
-import { EMPTY_LANE, LANES } from "@/components/lanes";
-import { TaskCard } from "@/components/task-card";
-import { Badge } from "@/components/ui/badge";
+import { TaskDetail } from "@/components/task-detail";
+import { TaskList } from "@/components/task-list";
+import { ArchiveTaskDetail, ArchiveTaskList, RoadmapView } from "@/components/version-timeline";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,16 +16,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api, formatTime } from "@/lib/client";
-import { cn } from "@/lib/utils";
-import type { Priority, ProjectDetail, Task, TaskStatus } from "@/lib/types";
-import { Plus, RefreshCw } from "lucide-react";
+import type { ArchiveTask, ProjectDetail, Task, TaskStatus, VersionEntry } from "@/lib/types";
+import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-
-const DAILY: TaskStatus[] = ["backlog", "doing", "done"];
 
 export function ProjectBoard({
   id,
@@ -42,8 +38,11 @@ export function ProjectBoard({
     initial ? null : "No encuentro ese proyecto.",
   );
   const [pendingKey, setPendingKey] = useState<string | null>(null);
-  const [lane, setLane] = useState("doing");
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [removing, setRemoving] = useState(false);
+  const [view, setView] = useState<"tasks" | "versions" | "roadmap">("tasks");
+  const [archiveTask, setArchiveTask] = useState<ArchiveTask | null>(null);
 
   const load = useCallback(
     async (refreshGithub = false) => {
@@ -73,54 +72,51 @@ export function ProjectBoard({
     });
   }, [subscribe, id, load]);
 
-  const columns = useMemo(() => {
-    if (!detail) return [];
-    const visible: {
-      status: TaskStatus;
-      title: string;
-      hint: string;
-      tone: string;
-      key: string;
-      tasks: Task[];
-    }[] = LANES.filter(
-      (entry) => DAILY.includes(entry.status) || detail.counts[entry.status] > 0,
-    ).map((entry) => ({
-      ...entry,
-      key: entry.status,
-      tasks: detail.tasks.filter((task) => task.status === entry.status),
-    }));
-    if (detail.github) {
-      visible.push({
-        status: "issue",
-        title: "GitHub",
-        hint: detail.github,
-        tone: "bg-foreground",
-        key: "github",
-        tasks: detail.githubTasks,
-      });
+  const selected = useMemo(() => {
+    if (!detail) return null;
+    const pool = [...detail.tasks, ...detail.githubTasks];
+    if (selectedKey) {
+      const byKey = pool.find((task) => task.key === selectedKey);
+      if (byKey) return byKey;
     }
-    return visible;
-  }, [detail]);
+    if (selectedId) return pool.find((task) => task.id === selectedId) ?? null;
+    return null;
+  }, [detail, selectedKey, selectedId]);
 
-  async function toggle(task: Task) {
-    if (!task.file || task.line === null) return;
+  function openTask(task: Task) {
+    setSelectedKey(task.key);
+    setSelectedId(task.id);
+  }
+
+  function closeTask() {
+    setSelectedKey(null);
+    setSelectedId(null);
+  }
+
+  async function setStatus(task: Task, status: TaskStatus, commit?: string) {
+    if (!task.file || task.line === null || task.status === status) return;
     setPendingKey(task.key);
     markLocalEdit();
     try {
-      const next = await api<ProjectDetail>(`/api/projects/${id}/tasks/toggle`, {
+      const next = await api<ProjectDetail>(`/api/projects/${id}/tasks/status`, {
         method: "POST",
-        body: JSON.stringify({ file: task.file, line: task.line }),
+        body: JSON.stringify({ file: task.file, line: task.line, status, commit }),
       });
       setDetail(next);
+      const match = next.tasks.find((entry) =>
+        task.id ? entry.id === task.id : entry.title === task.title,
+      );
+      if (match) openTask(match);
       await refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No pude actualizar la tarea.");
+      toast.error(err instanceof Error ? err.message : "No pude cambiar el estado.");
     } finally {
       setPendingKey(null);
     }
   }
 
   async function remove() {
+    if (!window.confirm("¿Quitar este proyecto del tablero? La carpeta no se borra.")) return;
     setRemoving(true);
     try {
       await api(`/api/projects/${id}`, { method: "DELETE" });
@@ -162,6 +158,43 @@ export function ProjectBoard({
 
   const hasBacklog = detail.files.some((file) => file.path.endsWith("BACKLOG.md"));
 
+  if (selected) {
+    return (
+      <div className="px-4 py-6 md:px-8 md:py-8">
+        <TaskDetail
+          key={selected.id ?? selected.key}
+          projectId={id}
+          task={selected}
+          versions={detail.versions}
+          pending={pendingKey === selected.key}
+          onClose={closeTask}
+          onStatus={(status, commit) => void setStatus(selected, status, commit)}
+          onSaved={(next) => {
+            setDetail(next);
+            const match = next.tasks.find((entry) =>
+              selected.id ? entry.id === selected.id : entry.key === selected.key,
+            );
+            if (match) openTask(match);
+            void refresh();
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (archiveTask) {
+    return (
+      <div className="px-4 py-6 md:px-8 md:py-8">
+        <ArchiveTaskDetail
+          projectId={id}
+          task={archiveTask}
+          repo={detail.sourceRepo}
+          onClose={() => setArchiveTask(null)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 py-6 md:px-8 md:py-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -169,29 +202,18 @@ export function ProjectBoard({
           <h1 className="font-heading text-4xl tracking-tight md:text-5xl">{detail.name}</h1>
           <p className="mt-2 font-mono text-[11px] text-muted-foreground">{detail.path}</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Si guardas un markdown de esta carpeta, el tablero se mueve solo.
+            Si guardas un markdown de esta carpeta, la lista se actualiza sola.
             {detail.updatedAt ? ` Último archivo a las ${formatTime(detail.updatedAt)}.` : ""}
           </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <NewTaskDialog
-            id={id}
-            disabled={Boolean(detail.error)}
-            onCreated={(next) => {
-              setDetail(next);
-              void refresh();
-            }}
-          />
-          <GithubDialog
-            id={id}
-            repo={detail.github}
-            onSaved={(next) => {
-              setDetail(next);
-              void refresh();
-            }}
-          />
-          <Button variant="ghost" onClick={() => void remove()} disabled={removing}>
-            Quitar
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-2 mt-2 text-muted-foreground"
+            onClick={() => void remove()}
+            disabled={removing}
+          >
+            <Trash2 />
+            {removing ? "Quitando…" : "Quitar del tablero"}
           </Button>
         </div>
       </div>
@@ -212,122 +234,100 @@ export function ProjectBoard({
         />
       ) : null}
 
-      <div className="mt-6 md:hidden">
-        <Tabs value={lane} onValueChange={setLane}>
-          <TabsList className="w-full overflow-x-auto">
-            {columns.map((column) => (
-              <TabsTrigger key={column.key} value={column.key}>
-                {column.title}
-                <span className="text-muted-foreground">{column.tasks.length}</span>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          {columns.map((column) => (
-            <TabsContent key={column.key} value={column.key} className="mt-4 grid gap-2">
-              <ColumnBody
-                column={column}
-                detail={detail}
-                pendingKey={pendingKey}
-                onToggle={toggle}
-                onRefreshGithub={() => void load(true)}
-              />
-            </TabsContent>
-          ))}
-        </Tabs>
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+        <div className="inline-flex rounded-full bg-muted/80 p-1">
+        <Button
+          variant={view === "tasks" ? "default" : "ghost"}
+          size="sm"
+          className="rounded-full"
+          onClick={() => setView("tasks")}
+        >
+          Tareas
+        </Button>
+        <Button
+          variant={view === "versions" ? "default" : "ghost"}
+          size="sm"
+          className="rounded-full"
+          onClick={() => setView("versions")}
+        >
+          Versiones
+        </Button>
+        <Button
+          variant={view === "roadmap" ? "default" : "ghost"}
+          size="sm"
+          className="rounded-full"
+          onClick={() => setView("roadmap")}
+        >
+          Roadmap
+        </Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <NewTaskDialog
+            id={id}
+            disabled={Boolean(detail.error)}
+            versions={detail.versions}
+            onCreated={(next) => {
+              setDetail(next);
+              void refresh();
+            }}
+          />
+          <NewVersionDialog
+            id={id}
+            disabled={Boolean(detail.error)}
+            onCreated={(next) => {
+              setDetail(next);
+              void refresh();
+            }}
+          />
+        </div>
       </div>
 
-      <div className="mt-6 hidden gap-4 md:grid md:auto-cols-[minmax(260px,1fr)] md:grid-flow-col md:overflow-x-auto md:pb-4">
-        {columns.map((column) => (
-          <section key={column.key} className="min-w-[260px]">
-            <header className="mb-3 flex items-baseline justify-between gap-2 px-1">
-              <div>
-                <h2 className="flex items-center gap-2 font-heading text-2xl tracking-tight">
-                  <span className={cn("size-2 rounded-full", column.tone)} aria-hidden />
-                  {column.title}
-                </h2>
-                <p className="text-xs text-muted-foreground">{column.hint}</p>
-              </div>
-              <span className="font-mono text-xs text-muted-foreground">{column.tasks.length}</span>
-            </header>
-            <div className="grid gap-2">
-              <ColumnBody
-                column={column}
-                detail={detail}
-                pendingKey={pendingKey}
-                onToggle={toggle}
-                onRefreshGithub={() => void load(true)}
-              />
-            </div>
-          </section>
-        ))}
-      </div>
+      {view === "tasks" ? (
+        <div className="mt-6">
+          <TaskList
+            detail={detail}
+            selectedKey={selectedKey}
+            onSelect={openTask}
+            onReorder={(file, fromLine, toLine) => {
+              markLocalEdit();
+              void api<ProjectDetail>(`/api/projects/${id}/tasks/reorder`, {
+                method: "POST",
+                body: JSON.stringify({ file, fromLine, toLine }),
+              })
+                .then((next) => {
+                  setDetail(next);
+                  return refresh();
+                })
+                .catch((err: unknown) => {
+                  toast.error(err instanceof Error ? err.message : "No pude cambiar el orden.");
+                });
+            }}
+          />
+        </div>
+      ) : null}
+      {view === "versions" ? (
+        <ArchiveTaskList
+          tasks={detail.archiveTasks ?? []}
+          versions={detail.versions}
+          repo={detail.sourceRepo}
+          onOpen={setArchiveTask}
+        />
+      ) : null}
+      {view === "roadmap" ? (
+        <RoadmapView
+          projectId={id}
+          revision={detail.updatedAt}
+          file={detail.files.find((file) => file.path.replace(/\\/g, "/").endsWith("ROADMAP.md"))?.path ?? null}
+          onChanged={() => load()}
+        />
+      ) : null}
       {!hasBacklog && detail.files.length > 0 ? (
         <p className="mt-4 text-xs text-muted-foreground">
-          Las tareas nuevas se escriben en BACKLOG.md. Este proyecto todavía no lo tiene: al crear
-          una, Bitácora lo añade en la raíz.
+          Las tareas nuevas se escriben en docs/BACKLOG.md. Este proyecto todavía no lo tiene: al
+          crear una, Bitácora lo añade ahí.
         </p>
       ) : null}
     </div>
-  );
-}
-
-function ColumnBody({
-  column,
-  detail,
-  pendingKey,
-  onToggle,
-  onRefreshGithub,
-}: {
-  column: { key: string; status: TaskStatus; tasks: Task[] };
-  detail: ProjectDetail;
-  pendingKey: string | null;
-  onToggle: (task: Task) => void;
-  onRefreshGithub: () => void;
-}) {
-  if (column.key === "github" && detail.githubError) {
-    return (
-      <div className="rounded-xl bg-destructive/10 px-3 py-3 text-sm text-destructive">
-        <p>{detail.githubError}</p>
-        <Button variant="outline" size="sm" className="mt-3" onClick={onRefreshGithub}>
-          <RefreshCw />
-          Reintentar
-        </Button>
-      </div>
-    );
-  }
-
-  if (column.tasks.length === 0) {
-    return (
-      <p className="rounded-xl border border-dashed border-border px-3 py-6 text-sm text-muted-foreground">
-        {column.key === "github"
-          ? "No hay issues abiertas."
-          : EMPTY_LANE[column.status]}
-      </p>
-    );
-  }
-
-  return (
-    <>
-      {column.tasks.map((task) => (
-        <TaskCard
-          key={task.key}
-          task={task}
-          pending={pendingKey === task.key}
-          onToggle={() => onToggle(task)}
-        />
-      ))}
-      {column.key === "github" && detail.githubTruncated ? (
-        <p className="px-1 text-[11px] text-muted-foreground">
-          Mostrando las 30 issues abiertas actualizadas más recientemente.
-        </p>
-      ) : null}
-      {column.key === "github" ? (
-        <Button variant="ghost" size="sm" onClick={onRefreshGithub}>
-          <RefreshCw />
-          Actualizar GitHub
-        </Button>
-      ) : null}
-    </>
   );
 }
 
@@ -347,7 +347,7 @@ function EmptyFiles({
     try {
       const next = await api<ProjectDetail>(`/api/projects/${id}/backlog`, { method: "POST" });
       onCreated(next);
-      toast("Creé BACKLOG.md en la raíz del proyecto.");
+      toast("Creé la estructura en docs/, con el mantenimiento del formato.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "No pude crear el backlog.");
     } finally {
@@ -359,11 +359,11 @@ function EmptyFiles({
     <div className="mt-6 rounded-2xl bg-card px-5 py-6 ring-1 ring-foreground/10">
       <h2 className="font-heading text-2xl">Esta carpeta no tiene tareas en markdown</h2>
       <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-        Busco BACKLOG.md, ROADMAP.md, KNOWN_ISSUES.md, TASKS.md, TODO.md e ISSUES.md en la raíz y
-        en docs/. Si usas otros nombres, puedes listarlos en un bitacora.json.
+        Puedo dejar en docs/ el backlog, el roadmap, el índice de versiones, el archive, las fichas
+        y un MAINTENANCE.md con el formato que hay que respetar. No toco lo que ya exista.
       </p>
       <Button className="mt-4" onClick={() => void create()} disabled={pending}>
-        {pending ? "Creando…" : "Crear BACKLOG.md"}
+        {pending ? "Creando…" : "Crear estructura"}
       </Button>
     </div>
   );
@@ -372,20 +372,30 @@ function EmptyFiles({
 function NewTaskDialog({
   id,
   disabled,
+  versions,
   onCreated,
 }: {
   id: string;
   disabled: boolean;
+  versions: VersionEntry[];
   onCreated: (detail: ProjectDetail) => void;
 }) {
   const { markLocalEdit } = useBitacora();
+  const openVersions = versions.filter((entry) => entry.status !== "published");
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [ticketId, setTicketId] = useState("");
   const [status, setStatus] = useState<TaskStatus>("backlog");
-  const [priority, setPriority] = useState<Priority | "">("");
+  const [version, setVersion] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  function openDialog(next: boolean) {
+    setOpen(next);
+    if (!next) return;
+    setError(null);
+    setVersion(openVersions.find((entry) => entry.status === "doing")?.id ?? "");
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -399,16 +409,16 @@ function NewTaskDialog({
           title,
           ticketId,
           status,
-          priority: priority || null,
+          version,
         }),
       });
       onCreated(next);
-      toast("Tarea escrita en BACKLOG.md.");
+      toast("Tarea escrita en el backlog.");
       setOpen(false);
       setTitle("");
       setTicketId("");
       setStatus("backlog");
-      setPriority("");
+      setVersion("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "No pude crear la tarea.");
     } finally {
@@ -417,7 +427,7 @@ function NewTaskDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={openDialog}>
       <DialogTrigger asChild>
         <Button disabled={disabled}>
           <Plus />
@@ -428,8 +438,8 @@ function NewTaskDialog({
         <DialogHeader>
           <DialogTitle className="font-heading text-xl">Nueva tarea</DialogTitle>
           <DialogDescription>
-            Se añade como checkbox en BACKLOG.md. Si editas ese archivo a mano, el tablero también
-            lo ve.
+            Se añade como checkbox en docs/BACKLOG.md. La versión decide a qué archive pasa cuando
+            la marques hecha.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="grid gap-3">
@@ -455,27 +465,30 @@ function NewTaskDialog({
               />
             </div>
             <div className="grid gap-1.5">
-              <Label htmlFor="task-priority">Prioridad</Label>
+              <Label htmlFor="task-version">Versión</Label>
               <select
-                id="task-priority"
-                value={priority}
-                onChange={(event) => setPriority(event.target.value as Priority | "")}
-                className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
+                id="task-version"
+                value={version}
+                onChange={(event) => setVersion(event.target.value)}
+                className="select-field"
               >
-                <option value="">Sin marcar</option>
-                <option value="alta">Alta</option>
-                <option value="media">Media</option>
-                <option value="baja">Baja</option>
+                <option value="">Sin versión</option>
+                {openVersions.map((entry) => (
+                  <option key={entry.id} value={entry.id}>
+                    {entry.id}
+                    {entry.status === "doing" ? " · en curso" : ""}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="task-status">Columna</Label>
+            <Label htmlFor="task-status">Lista</Label>
             <select
               id="task-status"
               value={status}
               onChange={(event) => setStatus(event.target.value as TaskStatus)}
-              className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
+              className="select-field"
             >
               <option value="backlog">Pendiente</option>
               <option value="doing">En curso</option>
@@ -494,152 +507,104 @@ function NewTaskDialog({
   );
 }
 
-function GithubDialog({
+function NewVersionDialog({
   id,
-  repo,
-  onSaved,
+  disabled,
+  onCreated,
 }: {
   id: string;
-  repo: string | null;
-  onSaved: (detail: ProjectDetail) => void;
+  disabled: boolean;
+  onCreated: (detail: ProjectDetail) => void;
 }) {
+  const { markLocalEdit } = useBitacora();
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(repo ?? "");
-  const [token, setToken] = useState("");
-  const [tokenState, setTokenState] = useState<string | null>(null);
+  const [versionId, setVersionId] = useState("");
+  const [title, setTitle] = useState("");
+  const [status, setStatus] = useState<"planned" | "doing">("planned");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  function openDialog(next: boolean) {
-    setOpen(next);
-    if (!next) return;
-    setValue(repo ?? "");
-    setError(null);
-    void api<{ configured: boolean; source: "file" | "env" | null }>("/api/github/token")
-      .then((result) => {
-        setTokenState(
-          result.source === "file"
-            ? "Hay un token guardado en esta máquina."
-            : result.source === "env"
-              ? "Está usando GITHUB_TOKEN del entorno."
-              : "Sin token: solo repositorios públicos, con límite de peticiones.",
-        );
-      })
-      .catch(() => setTokenState(null));
-  }
-
-  async function saveRepo(event: React.FormEvent) {
+  async function submit(event: React.FormEvent) {
     event.preventDefault();
     setPending(true);
     setError(null);
+    markLocalEdit();
     try {
-      const next = await api<ProjectDetail>(`/api/projects/${id}/github`, {
-        method: "PUT",
-        body: JSON.stringify({ repo: value }),
+      const next = await api<ProjectDetail>(`/api/projects/${id}/versions`, {
+        method: "POST",
+        body: JSON.stringify({ versionId, title, status }),
       });
-      onSaved(next);
-      if (next.githubError) toast.error(next.githubError);
-      else toast(next.github ? `Conectado a ${next.github}.` : "GitHub desconectado.");
+      onCreated(next);
+      toast(status === "doing" ? `${versionId} queda en curso.` : `${versionId} queda prevista.`);
       setOpen(false);
+      setVersionId("");
+      setTitle("");
+      setStatus("planned");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No pude guardar el repositorio.");
-    } finally {
-      setPending(false);
-    }
-  }
-
-  async function saveToken() {
-    setPending(true);
-    setError(null);
-    try {
-      const result = await api<{ configured: boolean; source: "file" | "env" | null }>(
-        "/api/github/token",
-        { method: "PUT", body: JSON.stringify({ token }) },
-      );
-      setToken("");
-      setTokenState(
-        result.source === "file"
-          ? "Token guardado en data/github-token. No se sube a git."
-          : result.source === "env"
-            ? "Quité el token del archivo. Sigue el del entorno, si lo hay."
-            : "Token borrado.",
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "No pude guardar el token.");
+      setError(err instanceof Error ? err.message : "No pude crear la versión.");
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={openDialog}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          GitHub
-          {repo ? <Badge variant="secondary">{repo.split("/")[1]}</Badge> : null}
+        <Button variant="outline" disabled={disabled}>
+          Nueva versión
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-heading text-xl">GitHub</DialogTitle>
+          <DialogTitle className="font-heading text-xl">Nueva versión</DialogTitle>
           <DialogDescription>
-            Las issues abiertas aparecen en su propia columna. El backlog en markdown no se sube
-            solo: eso sigue siendo un commit tuyo.
+            Añade la línea en VERSIONS.md, el punto del roadmap y un archive vacío. Si la dejas en
+            curso, la que estaba en curso pasa a previstas. Publicarla es cerrarla en el roadmap.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={saveRepo} className="grid gap-3">
+        <form onSubmit={submit} className="grid gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-1.5">
+              <Label htmlFor="version-id">Versión</Label>
+              <Input
+                id="version-id"
+                value={versionId}
+                onChange={(event) => setVersionId(event.target.value.trim())}
+                placeholder="v1.3.2"
+                className="font-mono"
+                required
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="version-status">Estado</Label>
+              <select
+                id="version-status"
+                value={status}
+                onChange={(event) => setStatus(event.target.value as "planned" | "doing")}
+                className="select-field"
+              >
+                <option value="planned">Prevista</option>
+                <option value="doing">En curso</option>
+              </select>
+            </div>
+          </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="github-repo">Repositorio</Label>
+            <Label htmlFor="version-title">Título</Label>
             <Input
-              id="github-repo"
-              value={value}
-              onChange={(event) => setValue(event.target.value)}
-              placeholder="tu-usuario/juguitoReader"
-              className="font-mono"
+              id="version-title"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Biblioteca"
+              required
             />
           </div>
+          {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <DialogFooter>
             <Button type="submit" disabled={pending}>
-              {pending ? "Conectando…" : value.trim() ? "Conectar" : "Quitar conexión"}
+              {pending ? "Creando…" : "Crear versión"}
             </Button>
           </DialogFooter>
         </form>
-        <div className="grid gap-2 border-t border-border pt-3">
-          <Label htmlFor="github-token">Token opcional</Label>
-          <Input
-            id="github-token"
-            type="password"
-            value={token}
-            onChange={(event) => setToken(event.target.value)}
-            placeholder="github_pat_…"
-            autoComplete="off"
-          />
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Hace falta para repos privados y para no chocar con el límite de la API. Un fine-grained
-            token con lectura de issues basta. Se guarda solo en esta máquina.
-          </p>
-          {tokenState ? <p className="text-xs text-muted-foreground">{tokenState}</p> : null}
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-          <div className="flex gap-2">
-            <Button type="button" variant="secondary" disabled={pending} onClick={() => void saveToken()}>
-              Guardar token
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={pending}
-              onClick={() => {
-                setToken("");
-                void api("/api/github/token", {
-                  method: "PUT",
-                  body: JSON.stringify({ token: "" }),
-                }).then(() => setTokenState("Token del archivo borrado."));
-              }}
-            >
-              Borrar token
-            </Button>
-          </div>
-        </div>
       </DialogContent>
     </Dialog>
   );

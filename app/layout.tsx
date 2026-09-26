@@ -1,5 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { BitacoraProvider } from "@/components/bitacora-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { loadSummaries } from "@/lib/load";
@@ -37,14 +38,17 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="es"
       className={`${outfit.variable} ${newsreader.variable} ${plex.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full">
-        <TooltipProvider>
-          <BitacoraProvider initialProjects={projects}>
-            <AppShell>{children}</AppShell>
-            <Toaster />
-          </BitacoraProvider>
-        </TooltipProvider>
+        <ThemeProvider>
+          <TooltipProvider>
+            <BitacoraProvider initialProjects={projects}>
+              <AppShell>{children}</AppShell>
+              <Toaster />
+            </BitacoraProvider>
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -93,7 +93,8 @@ class Hub {
   private isRelevant(projectId: string, relative: string): boolean {
     if (this.tracked.get(projectId)?.has(relative)) return true;
     const base = path.posix.basename(relative).toLowerCase();
-    if (base === "bitacora.json") return true;
+    if (base === "bitacora.json" || base === "versions.md" || base === "roadmap.md") return true;
+    if (relative.includes("/archive/") && base.endsWith(".md")) return true;
     return TRACKED_BASENAMES.some((name) => name.toLowerCase() === base);
   }
 }

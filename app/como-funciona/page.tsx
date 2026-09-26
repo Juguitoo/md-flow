@@ -34,17 +34,11 @@ export default function HowPage() {
           disco de esta máquina. Un <span className="font-mono text-sm">git pull</span> sí lo
           dispara, porque el archivo cambia aquí.
         </p>
-        <h2 className="pt-4 font-heading text-3xl tracking-tight">¿Y GitHub?</h2>
+        <h2 className="pt-4 font-heading text-3xl tracking-tight">¿Y los commits?</h2>
         <p>
-          Se puede conectar un repositorio por proyecto. Bitácora pide las issues abiertas a la
-          API y las pone en una columna aparte. Un repo público funciona sin token. Uno privado,
-          o muchos refrescos, necesitan un token con permiso de lectura. El token se queda en{" "}
-          <span className="font-mono text-sm">data/github-token</span>, que no se sube a git.
-        </p>
-        <p>
-          Esa conexión no convierte el backlog en issues, ni hace commit cuando marcas una tarea.
-          El markdown y las issues son dos fuentes distintas. Subir el BACKLOG sigue siendo un
-          commit tuyo, cuando tú quieras.
+          Al dar una tarea por hecha puedes anotar el hash. Bitácora lo guarda en el archive y, si
+          el remoto <span className="font-mono text-sm">origin</span> de esa carpeta es de GitHub,
+          el hash abre el commit. No hace falta conectar issues ni un token.
         </p>
         <h2 className="pt-4 font-heading text-3xl tracking-tight">Qué archivos entiende</h2>
         <p>
@@ -55,13 +49,12 @@ export default function HowPage() {
         </p>
         <p>
           Si tus notas viven en otro sitio, un <span className="font-mono text-sm">bitacora.json</span> en
-          la raíz puede listar más archivos y, si quieres, el repo de GitHub:
+          la raíz puede listar más archivos:
         </p>
       </div>
       <pre className="mt-4 overflow-x-auto rounded-xl bg-card p-4 font-mono text-xs leading-relaxed ring-1 ring-foreground/10">
         {`{
-  "files": [".artifacts/plans/DATA-002.md"],
-  "github": "tu-usuario/juguitoReader"
+  "files": [".artifacts/plans/DATA-002.md"]
 }`}
       </pre>
       <div className="mt-8 space-y-5 text-base leading-relaxed">

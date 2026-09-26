@@ -10,6 +10,9 @@ export interface Task {
   title: string;
   status: TaskStatus;
   priority: Priority | null;
+  version: string | null;
+  taskType: string | null;
+  ref: string | null;
   tags: string[];
   source: TaskSource;
   file: string | null;
@@ -38,6 +41,27 @@ export interface TaskHighlight {
   status: TaskStatus;
 }
 
+export type VersionStatus = "doing" | "planned" | "published";
+
+export interface VersionEntry {
+  id: string;
+  title: string;
+  status: VersionStatus;
+  archive: string | null;
+}
+
+export interface ArchiveTask {
+  key: string;
+  id: string;
+  title: string;
+  taskType: string | null;
+  commits: string;
+  note: string;
+  version: string;
+  versionTitle: string;
+  file: string;
+}
+
 export interface ProjectSummary {
   id: string;
   name: string;
@@ -56,6 +80,10 @@ export interface ProjectDetail extends ProjectSummary {
   githubTasks: Task[];
   githubError: string | null;
   githubTruncated: boolean;
+  versions: VersionEntry[];
+  versionsFile: string | null;
+  archiveTasks: ArchiveTask[];
+  sourceRepo: string | null;
 }
 
 export interface NewTaskInput {
@@ -63,4 +91,5 @@ export interface NewTaskInput {
   ticketId?: string | null;
   status: TaskStatus;
   priority?: Priority | null;
+  version?: string | null;
 }

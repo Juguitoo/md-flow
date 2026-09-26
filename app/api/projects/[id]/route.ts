@@ -1,4 +1,3 @@
-import { fetchGithubIssues } from "@/lib/github";
 import { jsonError } from "@/lib/http";
 import { getHub } from "@/lib/hub";
 import { getProject, removeProject } from "@/lib/registry";
@@ -8,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(
-  request: Request,
+  _request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
@@ -16,15 +15,7 @@ export async function GET(
   if (!project) return jsonError("No encuentro ese proyecto.", 404);
 
   await getHub().sync();
-  const detail = await scanProject(project);
-  if (detail.github) {
-    const refresh = new URL(request.url).searchParams.get("refresh") === "1";
-    const github = await fetchGithubIssues(detail.github, refresh);
-    detail.githubTasks = github.tasks;
-    detail.githubError = github.error;
-    detail.githubTruncated = github.truncated;
-  }
-  return Response.json(detail);
+  return Response.json(await scanProject(project));
 }
 
 export async function DELETE(

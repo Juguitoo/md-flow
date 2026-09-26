@@ -1,7 +1,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { TRACKED_BASENAMES, parseMarkdown } from "./markdown";
+import { parseRepo } from "./github";
 import { displayPath, isDirectory, isInside, resolveProjectPath } from "./paths";
+import { loadArchiveTasks } from "./archive";
+import { loadVersions } from "./versions";
 import type {
   ProjectDetail,
   ProjectFile,
@@ -19,7 +24,20 @@ const EMPTY_COUNTS: Record<TaskStatus, number> = {
   issue: 0,
 };
 
+const run = promisify(execFile);
 const REPO = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
+
+async function originRepo(root: string): Promise<string | null> {
+  try {
+    const { stdout } = await run("git", ["-C", root, "remote", "get-url", "origin"], {
+      timeout: 4000,
+      windowsHide: true,
+    });
+    return parseRepo(String(stdout));
+  } catch {
+    return null;
+  }
+}
 
 async function readConfig(root: string): Promise<{
   github: string | null;
@@ -86,6 +104,10 @@ function emptyDetail(project: ProjectRecord, error: string | null): ProjectDetai
     githubTasks: [],
     githubError: null,
     githubTruncated: false,
+    versions: [],
+    versionsFile: null,
+    archiveTasks: [],
+    sourceRepo: project.github,
   };
 }
 
@@ -124,9 +146,25 @@ export async function scanProject(project: ProjectRecord): Promise<ProjectDetail
       "",
     );
 
+    let timeline = { file: null as string | null, versions: [] as Awaited<ReturnType<typeof loadVersions>>["versions"] };
+    try {
+      timeline = await loadVersions(root);
+    } catch {
+      // Un VERSIONS.md ilegible no deja sin tareas al proyecto.
+    }
+    let archiveTasks: Awaited<ReturnType<typeof loadArchiveTasks>> = [];
+    try {
+      archiveTasks = await loadArchiveTasks(root, timeline.versions);
+    } catch {
+      // Un archive ilegible no deja sin tareas al proyecto.
+    }
+
+    const connected = project.github ?? config.github;
+    const sourceRepo = connected ?? (await originRepo(root));
+
     return {
       ...emptyDetail(project, null),
-      github: project.github ?? config.github,
+      github: connected,
       counts,
       openCount: counts.backlog + counts.doing + counts.roadmap + counts.issue,
       files,
@@ -137,6 +175,10 @@ export async function scanProject(project: ProjectRecord): Promise<ProjectDetail
       })),
       updatedAt: latest || new Date().toISOString(),
       tasks,
+      versions: timeline.versions,
+      versionsFile: timeline.file,
+      archiveTasks,
+      sourceRepo,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "No pude leer el proyecto.";

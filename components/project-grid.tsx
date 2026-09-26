@@ -86,7 +86,7 @@ export function ProjectGrid() {
             <Link
               key={project.id}
               href={`/projects/${project.id}`}
-              className="group rounded-2xl bg-card p-5 ring-1 ring-foreground/10 transition-shadow hover:shadow-md"
+              className="group rounded-2xl bg-card p-5 shadow-sm ring-1 ring-foreground/8 transition-transform hover:-translate-y-0.5"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -145,7 +145,7 @@ export function ProjectGrid() {
 
 function Count({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl bg-muted/70 px-2 py-2 text-center">
+    <div className="rounded-xl bg-background/70 px-2 py-3 text-center ring-1 ring-foreground/5">
       <dt className="text-[11px] text-muted-foreground">{label}</dt>
       <dd className="font-heading text-2xl leading-tight">{value}</dd>
     </div>

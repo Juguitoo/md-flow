@@ -25,6 +25,20 @@ export function AddProjectDialog({ trigger }: { trigger: React.ReactNode }) {
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [picking, setPicking] = useState(false);
+
+  async function chooseFolder() {
+    setPicking(true);
+    setError(null);
+    try {
+      const result = await api<{ path: string | null }>("/api/projects/pick", { method: "POST" });
+      if (result.path) setPath(result.path);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No pude abrir el selector.");
+    } finally {
+      setPicking(false);
+    }
+  }
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -59,21 +73,30 @@ export function AddProjectDialog({ trigger }: { trigger: React.ReactNode }) {
         <DialogHeader>
           <DialogTitle className="font-heading text-xl">Añadir proyecto</DialogTitle>
           <DialogDescription>
-            La carpeta donde ya tienes BACKLOG.md, ROADMAP.md o KNOWN_ISSUES.md.
-            Puede ser la de juguitoReader o cualquier otra.
+            Elige la carpeta del proyecto. Si el selector no sale, puedes pegar la ruta.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="grid gap-3">
           <div className="grid gap-1.5">
-            <Label htmlFor="project-path">Ruta de la carpeta</Label>
-            <Input
-              id="project-path"
-              value={path}
-              onChange={(event) => setPath(event.target.value)}
-              placeholder="/home/hugo/juguitoReader"
-              autoComplete="off"
-              required
-            />
+            <Label htmlFor="project-path">Carpeta</Label>
+            <div className="flex gap-2">
+              <Input
+                id="project-path"
+                value={path}
+                onChange={(event) => setPath(event.target.value)}
+                placeholder="D:\Hugo\AndroidStudioProjects\JuguitoReader"
+                autoComplete="off"
+                required
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={picking || pending}
+                onClick={() => void chooseFolder()}
+              >
+                {picking ? "Eligiendo…" : "Elegir"}
+              </Button>
+            </div>
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="project-name">Nombre (opcional)</Label>
@@ -87,7 +110,7 @@ export function AddProjectDialog({ trigger }: { trigger: React.ReactNode }) {
           </div>
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
           <DialogFooter>
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" disabled={pending || picking || !path.trim()}>
               {pending ? "Buscando…" : "Añadir"}
             </Button>
           </DialogFooter>

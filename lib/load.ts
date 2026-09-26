@@ -1,4 +1,3 @@
-import { fetchGithubIssues } from "./github";
 import { getHub } from "./hub";
 import { ensureRegistry, getProject } from "./registry";
 import { scanProject, toSummary } from "./scan";
@@ -11,16 +10,9 @@ export async function loadSummaries(): Promise<ProjectSummary[]> {
   return details.map(toSummary);
 }
 
-export async function loadDetail(id: string, refresh = false): Promise<ProjectDetail | null> {
+export async function loadDetail(id: string): Promise<ProjectDetail | null> {
   await getHub().sync();
   const project = await getProject(id);
   if (!project) return null;
-  const detail = await scanProject(project);
-  if (detail.github) {
-    const github = await fetchGithubIssues(detail.github, refresh);
-    detail.githubTasks = github.tasks;
-    detail.githubError = github.error;
-    detail.githubTruncated = github.truncated;
-  }
-  return detail;
+  return scanProject(project);
 }

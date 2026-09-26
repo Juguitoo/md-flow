@@ -27,7 +27,7 @@ const TTL_MS = 60_000;
 export function parseRepo(input: string): string | null {
   const trimmed = input.trim().replace(/\.git$/, "").replace(/\/$/, "");
   if (!trimmed) return null;
-  const fromUrl = trimmed.match(/github\.com\/([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)$/i);
+  const fromUrl = trimmed.match(/github\.com[/:]([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)$/i);
   if (fromUrl) return fromUrl[1];
   if (/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(trimmed)) return trimmed;
   return null;
@@ -67,6 +67,9 @@ function mapIssue(issue: GithubIssue): Task {
     title: issue.title,
     status: doing ? "doing" : "backlog",
     priority: priorityFromLabels(labels),
+    version: null,
+    taskType: null,
+    ref: null,
     tags: labels.slice(0, 3),
     source: "github",
     file: null,
